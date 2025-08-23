@@ -61,7 +61,7 @@ Preferred communication style: Simple, everyday language.
 - **connect-pg-simple**: PostgreSQL session store for Express sessions
 
 ### AI Integration
-- **OpenAI API**: GPT-4o model for natural language expense processing
+- **Google Gemini API**: Gemini 2.5 Flash and Pro models for natural language expense processing
 - **Use Cases**: Intent recognition, expense extraction from text, spending insights generation
 - **Features**: Conversational expense entry, automated categorization, spending analysis
 
