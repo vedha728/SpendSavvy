@@ -1,9 +1,12 @@
-import OpenAI from "openai";
+import { GoogleGenAI } from "@google/genai";
 
-// the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
-const openai = new OpenAI({ 
-  apiKey: process.env.OPENAI_API_KEY || process.env.OPENAI_API_KEY_ENV_VAR || "your-api-key-here"
-});
+// DON'T DELETE THIS COMMENT
+// Follow these instructions when using this blueprint:
+// - Note that the newest Gemini model series is "gemini-2.5-flash" or gemini-2.5-pro"
+//   - do not change this unless explicitly requested by the user
+
+// This API key is from Gemini Developer API Key, not vertex AI API Key
+const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || "" });
 
 export interface ExpenseIntentResult {
   intent: "add_expense" | "query_expenses" | "general_help" | "unclear";
@@ -18,8 +21,7 @@ export interface ExpenseIntentResult {
 
 export async function processExpenseQuery(userMessage: string): Promise<ExpenseIntentResult> {
   try {
-    const prompt = `
-You are an expense tracking assistant for students. Analyze the user's message and determine their intent.
+    const systemPrompt = `You are an expense tracking assistant for students. Analyze the user's message and determine their intent.
 
 Possible intents:
 1. "add_expense" - User wants to add a new expense
@@ -42,36 +44,47 @@ If intent is "query_expenses", determine query_type:
 
 Provide a helpful response_text for the user.
 
-User message: "${userMessage}"
+Respond with JSON in this format:
+{'intent': string, 'amount': number, 'category': string, 'description': string, 'date': string, 'query_type': string, 'category_filter': string, 'response_text': string}`;
 
-Respond with JSON only.
-`;
-
-    const response = await openai.chat.completions.create({
-      model: "gpt-4o",
-      messages: [
-        {
-          role: "system",
-          content: prompt,
+    const response = await ai.models.generateContent({
+      model: "gemini-2.5-flash",
+      config: {
+        systemInstruction: systemPrompt,
+        responseMimeType: "application/json",
+        responseSchema: {
+          type: "object",
+          properties: {
+            intent: { type: "string" },
+            amount: { type: "number" },
+            category: { type: "string" },
+            description: { type: "string" },
+            date: { type: "string" },
+            query_type: { type: "string" },
+            category_filter: { type: "string" },
+            response_text: { type: "string" },
+          },
+          required: ["intent", "response_text"],
         },
-        {
-          role: "user",
-          content: userMessage,
-        },
-      ],
-      response_format: { type: "json_object" },
+      },
+      contents: userMessage,
     });
 
-    const result = JSON.parse(response.choices[0].message.content || "{}");
-    return result as ExpenseIntentResult;
+    const rawJson = response.text;
+    if (rawJson) {
+      const result = JSON.parse(rawJson);
+      return result as ExpenseIntentResult;
+    } else {
+      throw new Error("Empty response from model");
+    }
   } catch (error) {
-    console.error("OpenAI API error:", error);
+    console.error("Gemini API error:", error);
     
     // Check if it's a quota/billing issue
     if (error instanceof Error && error.message.includes('quota')) {
       return {
         intent: "unclear",
-        response_text: "I'm currently unable to help due to API quota limits. Please check your OpenAI account billing and usage at platform.openai.com/usage",
+        response_text: "I'm currently unable to help due to API quota limits. Please check your Gemini account usage.",
       };
     }
     
@@ -92,6 +105,8 @@ Respond with JSON only.
 
 export async function generateExpenseInsights(expenses: any[], query: string): Promise<string> {
   try {
+    const systemPrompt = "You are a helpful expense tracking assistant that provides insights about spending patterns and answers questions about expenses.";
+    
     const prompt = `
 Based on the following expense data, provide helpful insights and answer the user's question.
 
@@ -101,27 +116,21 @@ User question: "${query}"
 Provide a concise, helpful response about their spending patterns, suggestions, or direct answers to their question.
 `;
 
-    const response = await openai.chat.completions.create({
-      model: "gpt-4o",
-      messages: [
-        {
-          role: "system",
-          content: "You are a helpful expense tracking assistant that provides insights about spending patterns and answers questions about expenses.",
-        },
-        {
-          role: "user",
-          content: prompt,
-        },
-      ],
+    const response = await ai.models.generateContent({
+      model: "gemini-2.5-pro",
+      config: {
+        systemInstruction: systemPrompt,
+      },
+      contents: prompt,
     });
 
-    return response.choices[0].message.content || "I couldn't analyze your expenses right now.";
+    return response.text || "I couldn't analyze your expenses right now.";
   } catch (error) {
-    console.error("OpenAI API error:", error);
+    console.error("Gemini API error:", error);
     
     // Check if it's a quota/billing issue
     if (error instanceof Error && error.message.includes('quota')) {
-      return "I'm currently unable to analyze your expenses due to API quota limits. Please check your OpenAI account billing and usage at platform.openai.com/usage";
+      return "I'm currently unable to analyze your expenses due to API quota limits. Please check your Gemini account usage.";
     }
     
     // Check if it's a rate limit issue
