@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { PieChart, Pie, Cell, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
 import { api } from "@/lib/api";
@@ -6,6 +7,8 @@ import { categories } from "@shared/schema";
 const COLORS = ['#F59E0B', '#2563EB', '#10B981', '#8B5CF6', '#6B7280', '#EF4444', '#EC4899', '#06B6D4', '#84CC16'];
 
 export default function ExpenseCharts() {
+  const [viewMode, setViewMode] = useState<"weekly" | "monthly">("weekly");
+  
   const { data: expenses = [], isLoading } = useQuery({
     queryKey: ["/api/expenses"],
     queryFn: () => api.expenses.getAll(),
@@ -38,24 +41,50 @@ export default function ExpenseCharts() {
     };
   }).filter(item => item.value > 0);
 
-  // Prepare daily trend data for line chart
-  const last7Days = Array.from({ length: 7 }, (_, i) => {
-    const date = new Date();
-    date.setDate(date.getDate() - (6 - i));
-    return date;
-  });
+  // Prepare trend data for line chart based on view mode
+  const getTrendData = () => {
+    if (viewMode === "weekly") {
+      // Last 7 days
+      const last7Days = Array.from({ length: 7 }, (_, i) => {
+        const date = new Date();
+        date.setDate(date.getDate() - (6 - i));
+        return date;
+      });
 
-  const trendData = last7Days.map(date => {
-    const dayExpenses = expenses.filter(expense => {
-      const expenseDate = new Date(expense.date);
-      return expenseDate.toDateString() === date.toDateString();
-    });
-    const total = dayExpenses.reduce((sum, expense) => sum + parseFloat(expense.amount), 0);
-    return {
-      name: date.toLocaleDateString('en-US', { weekday: 'short' }),
-      value: total,
-    };
-  });
+      return last7Days.map(date => {
+        const dayExpenses = expenses.filter(expense => {
+          const expenseDate = new Date(expense.date);
+          return expenseDate.toDateString() === date.toDateString();
+        });
+        const total = dayExpenses.reduce((sum, expense) => sum + parseFloat(expense.amount), 0);
+        return {
+          name: date.toLocaleDateString('en-US', { weekday: 'short' }),
+          value: total,
+        };
+      });
+    } else {
+      // Last 30 days grouped by date
+      const last30Days = Array.from({ length: 30 }, (_, i) => {
+        const date = new Date();
+        date.setDate(date.getDate() - (29 - i));
+        return date;
+      });
+
+      return last30Days.map(date => {
+        const dayExpenses = expenses.filter(expense => {
+          const expenseDate = new Date(expense.date);
+          return expenseDate.toDateString() === date.toDateString();
+        });
+        const total = dayExpenses.reduce((sum, expense) => sum + parseFloat(expense.amount), 0);
+        return {
+          name: date.getDate().toString(),
+          value: total,
+        };
+      });
+    }
+  };
+
+  const trendData = getTrendData();
 
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
@@ -86,8 +115,28 @@ export default function ExpenseCharts() {
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-semibold text-text-primary">Spending Overview</h2>
           <div className="flex items-center space-x-2">
-            <button className="px-3 py-1 bg-primary text-white rounded-md text-sm">Weekly</button>
-            <button className="px-3 py-1 text-text-secondary rounded-md text-sm hover:bg-gray-100 transition-colors">Monthly</button>
+            <button 
+              onClick={() => setViewMode("weekly")}
+              className={`px-3 py-1 rounded-md text-sm transition-colors ${
+                viewMode === "weekly" 
+                  ? "bg-primary text-white" 
+                  : "text-text-secondary hover:bg-gray-100"
+              }`}
+              data-testid="button-weekly-view"
+            >
+              Weekly
+            </button>
+            <button 
+              onClick={() => setViewMode("monthly")}
+              className={`px-3 py-1 rounded-md text-sm transition-colors ${
+                viewMode === "monthly" 
+                  ? "bg-primary text-white" 
+                  : "text-text-secondary hover:bg-gray-100"
+              }`}
+              data-testid="button-monthly-view"
+            >
+              Monthly
+            </button>
           </div>
         </div>
       </div>
@@ -124,7 +173,9 @@ export default function ExpenseCharts() {
 
           {/* Daily Trend Line Chart */}
           <div className="h-64" data-testid="chart-trend">
-            <h3 className="text-sm font-medium text-text-secondary mb-4">Daily Spending Trend</h3>
+            <h3 className="text-sm font-medium text-text-secondary mb-4">
+              {viewMode === "weekly" ? "Weekly Spending Trend" : "Monthly Spending Trend"}
+            </h3>
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={trendData}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
