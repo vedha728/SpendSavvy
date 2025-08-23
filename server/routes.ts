@@ -46,7 +46,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Create expense
   app.post("/api/expenses", async (req, res) => {
     try {
-      const validatedData = insertExpenseSchema.parse(req.body);
+      // Convert date string to Date object before validation
+      const expenseData = {
+        ...req.body,
+        date: req.body.date ? new Date(req.body.date) : new Date(),
+      };
+      
+      const validatedData = insertExpenseSchema.parse(expenseData);
       const expense = await storage.createExpense(validatedData);
       res.status(201).json(expense);
     } catch (error) {
@@ -58,7 +64,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Update expense
   app.put("/api/expenses/:id", async (req, res) => {
     try {
-      const validatedData = updateExpenseSchema.parse(req.body);
+      // Convert date string to Date object before validation if date is provided
+      const expenseData = {
+        ...req.body,
+        ...(req.body.date && { date: new Date(req.body.date) }),
+      };
+      
+      const validatedData = updateExpenseSchema.parse(expenseData);
       const expense = await storage.updateExpense(req.params.id, validatedData);
       if (!expense) {
         return res.status(404).json({ message: "Expense not found" });
