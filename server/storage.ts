@@ -14,15 +14,30 @@ export interface IStorage {
   // Budget operations
   getBudget(): Promise<number>;
   setBudget(amount: number): Promise<void>;
+  
+  // Manual overrides for stats
+  setTodayTotal(amount: number): Promise<void>;
+  setMonthTotal(amount: number): Promise<void>;
+  setAvgDaily(amount: number): Promise<void>;
+  getTodayOverride(): Promise<number | undefined>;
+  getMonthOverride(): Promise<number | undefined>;
+  getAvgDailyOverride(): Promise<number | undefined>;
+  clearOverrides(): Promise<void>;
 }
 
 export class MemStorage implements IStorage {
   private expenses: Map<string, Expense>;
   private monthlyBudget: number;
+  private manualOverrides: {
+    todayTotal?: number;
+    monthTotal?: number;
+    avgDaily?: number;
+  };
 
   constructor() {
     this.expenses = new Map();
     this.monthlyBudget = 10000; // Default budget
+    this.manualOverrides = {};
   }
 
   async getExpenses(): Promise<Expense[]> {
@@ -81,6 +96,34 @@ export class MemStorage implements IStorage {
 
   async setBudget(amount: number): Promise<void> {
     this.monthlyBudget = amount;
+  }
+
+  async setTodayTotal(amount: number): Promise<void> {
+    this.manualOverrides.todayTotal = amount;
+  }
+
+  async setMonthTotal(amount: number): Promise<void> {
+    this.manualOverrides.monthTotal = amount;
+  }
+
+  async setAvgDaily(amount: number): Promise<void> {
+    this.manualOverrides.avgDaily = amount;
+  }
+
+  async getTodayOverride(): Promise<number | undefined> {
+    return this.manualOverrides.todayTotal;
+  }
+
+  async getMonthOverride(): Promise<number | undefined> {
+    return this.manualOverrides.monthTotal;
+  }
+
+  async getAvgDailyOverride(): Promise<number | undefined> {
+    return this.manualOverrides.avgDaily;
+  }
+
+  async clearOverrides(): Promise<void> {
+    this.manualOverrides = {};
   }
 }
 

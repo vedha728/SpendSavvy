@@ -108,12 +108,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const todayExpenses = expenses.filter(e => new Date(e.date) >= startOfToday);
       const monthExpenses = expenses.filter(e => new Date(e.date) >= startOfMonth);
       
-      const todayTotal = todayExpenses.reduce((sum, e) => sum + parseFloat(e.amount), 0);
-      const monthTotal = monthExpenses.reduce((sum, e) => sum + parseFloat(e.amount), 0);
-      
-      // Get dynamic budget from storage
-      const monthlyBudget = await storage.getBudget();
-      const budgetLeft = monthlyBudget - monthTotal;
+      // Calculate base values from expenses
+      const calculatedTodayTotal = todayExpenses.reduce((sum, e) => sum + parseFloat(e.amount), 0);
+      const calculatedMonthTotal = monthExpenses.reduce((sum, e) => sum + parseFloat(e.amount), 0);
       
       // Average daily spending for last 30 days
       const last30Days = expenses.filter(e => {
@@ -122,7 +119,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
         thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
         return expenseDate >= thirtyDaysAgo;
       });
-      const avgDaily = last30Days.reduce((sum, e) => sum + parseFloat(e.amount), 0) / 30;
+      const calculatedAvgDaily = last30Days.reduce((sum, e) => sum + parseFloat(e.amount), 0) / 30;
+      
+      // Get manual overrides if any
+      const todayOverride = await storage.getTodayOverride();
+      const monthOverride = await storage.getMonthOverride();
+      const avgDailyOverride = await storage.getAvgDailyOverride();
+      
+      // Use overrides or calculated values
+      const todayTotal = todayOverride !== undefined ? todayOverride : calculatedTodayTotal;
+      const monthTotal = monthOverride !== undefined ? monthOverride : calculatedMonthTotal;
+      const avgDaily = avgDailyOverride !== undefined ? avgDailyOverride : calculatedAvgDaily;
+      
+      // Get dynamic budget from storage
+      const monthlyBudget = await storage.getBudget();
+      const budgetLeft = monthlyBudget - monthTotal;
       
       res.json({
         todayTotal,
@@ -187,6 +198,63 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error processing chat:", error);
       res.status(500).json({ message: "Failed to process your message" });
+    }
+  });
+
+  // API endpoints for manual stat overrides
+  app.post("/api/stats/set-today", async (req, res) => {
+    try {
+      const { amount } = req.body;
+      if (typeof amount !== 'number' || amount < 0) {
+        return res.status(400).json({ message: "Invalid amount" });
+      }
+      await storage.setTodayTotal(amount);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error setting today's total:", error);
+      res.status(500).json({ message: "Failed to update today's spending" });
+    }
+  });
+
+  app.post("/api/stats/set-month", async (req, res) => {
+    try {
+      const { amount } = req.body;
+      if (typeof amount !== 'number' || amount < 0) {
+        return res.status(400).json({ message: "Invalid amount" });
+      }
+      await storage.setMonthTotal(amount);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error setting month total:", error);
+      res.status(500).json({ message: "Failed to update monthly spending" });
+    }
+  });
+
+  app.post("/api/stats/set-avg-daily", async (req, res) => {
+    try {
+      const { amount } = req.body;
+      if (typeof amount !== 'number' || amount < 0) {
+        return res.status(400).json({ message: "Invalid amount" });
+      }
+      await storage.setAvgDaily(amount);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error setting avg daily:", error);
+      res.status(500).json({ message: "Failed to update average daily spending" });
+    }
+  });
+
+  app.post("/api/stats/set-budget", async (req, res) => {
+    try {
+      const { amount } = req.body;
+      if (typeof amount !== 'number' || amount < 0) {
+        return res.status(400).json({ message: "Invalid amount" });
+      }
+      await storage.setBudget(amount);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error setting budget:", error);
+      res.status(500).json({ message: "Failed to update budget" });
     }
   });
 

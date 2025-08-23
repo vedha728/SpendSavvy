@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { Calendar, TrendingUp, PiggyBank, Calculator } from "lucide-react";
 import { api } from "@/lib/api";
+import EditableStat from "./editable-stat";
 
 export default function QuickStats() {
   const { data: stats, isLoading } = useQuery({
@@ -20,86 +21,43 @@ export default function QuickStats() {
     );
   }
 
-  const todayChange = stats ? ((stats.todayTotal / (stats.avgDaily || 1)) - 1) * 100 : 0;
-  const monthChange = stats ? ((stats.monthTotal / (stats.monthlyBudget * 0.8)) - 1) * 100 : 0;
-  const budgetPercentage = stats ? (stats.budgetLeft / stats.monthlyBudget) * 100 : 0;
-
   return (
     <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-      <div className="bg-surface rounded-xl shadow-sm p-6 border border-gray-100" data-testid="card-today-spending">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-text-secondary text-sm font-medium">Today's Spending</p>
-            <p className="text-2xl font-bold text-text-primary" data-testid="text-today-total">
-              ₹{stats?.todayTotal.toFixed(0) || '0'}
-            </p>
-          </div>
-          <div className="w-12 h-12 bg-red-50 rounded-lg flex items-center justify-center">
-            <Calendar className="h-6 w-6 text-red-500" />
-          </div>
-        </div>
-        <div className="mt-3 flex items-center text-sm">
-          <span className={`font-medium ${todayChange >= 0 ? 'text-red-500' : 'text-green-500'}`}>
-            {todayChange >= 0 ? '+' : ''}{todayChange.toFixed(0)}%
-          </span>
-          <span className="text-text-secondary ml-1">vs average</span>
-        </div>
-      </div>
+      <EditableStat
+        label="Today's Spending"
+        value={stats?.todayTotal || 0}
+        icon={<Calendar className="h-6 w-6 text-red-500" />}
+        colorClass="bg-red-50"
+        onUpdate={api.stats.setTodayTotal}
+        testId="today-spending"
+      />
 
-      <div className="bg-surface rounded-xl shadow-sm p-6 border border-gray-100" data-testid="card-month-spending">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-text-secondary text-sm font-medium">This Month</p>
-            <p className="text-2xl font-bold text-text-primary" data-testid="text-month-total">
-              ₹{stats?.monthTotal.toFixed(0) || '0'}
-            </p>
-          </div>
-          <div className="w-12 h-12 bg-blue-50 rounded-lg flex items-center justify-center">
-            <TrendingUp className="h-6 w-6 text-blue-500" />
-          </div>
-        </div>
-        <div className="mt-3 flex items-center text-sm">
-          <span className={`font-medium ${monthChange >= 0 ? 'text-red-500' : 'text-green-500'}`}>
-            {monthChange >= 0 ? '+' : ''}{monthChange.toFixed(0)}%
-          </span>
-          <span className="text-text-secondary ml-1">of budget used</span>
-        </div>
-      </div>
+      <EditableStat
+        label="This Month"
+        value={stats?.monthTotal || 0}
+        icon={<TrendingUp className="h-6 w-6 text-blue-500" />}
+        colorClass="bg-blue-50"
+        onUpdate={api.stats.setMonthTotal}
+        testId="month-spending"
+      />
 
-      <div className="bg-surface rounded-xl shadow-sm p-6 border border-gray-100" data-testid="card-budget-left">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-text-secondary text-sm font-medium">Budget Left</p>
-            <p className="text-2xl font-bold text-text-primary" data-testid="text-budget-left">
-              ₹{stats?.budgetLeft.toFixed(0) || '0'}
-            </p>
-          </div>
-          <div className="w-12 h-12 bg-green-50 rounded-lg flex items-center justify-center">
-            <PiggyBank className="h-6 w-6 text-green-500" />
-          </div>
-        </div>
-        <div className="mt-3 flex items-center text-sm">
-          <span className="text-green-500 font-medium">{budgetPercentage.toFixed(0)}%</span>
-          <span className="text-text-secondary ml-1">remaining</span>
-        </div>
-      </div>
+      <EditableStat
+        label="Budget Left"
+        value={stats?.budgetLeft || 0}
+        icon={<PiggyBank className="h-6 w-6 text-green-500" />}
+        colorClass="bg-green-50"
+        onUpdate={(amount) => api.stats.setBudget(amount + (stats?.monthTotal || 0))}
+        testId="budget-left"
+      />
 
-      <div className="bg-surface rounded-xl shadow-sm p-6 border border-gray-100" data-testid="card-avg-daily">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-text-secondary text-sm font-medium">Avg Daily</p>
-            <p className="text-2xl font-bold text-text-primary" data-testid="text-avg-daily">
-              ₹{stats?.avgDaily.toFixed(0) || '0'}
-            </p>
-          </div>
-          <div className="w-12 h-12 bg-yellow-50 rounded-lg flex items-center justify-center">
-            <Calculator className="h-6 w-6 text-yellow-500" />
-          </div>
-        </div>
-        <div className="mt-3 flex items-center text-sm">
-          <span className="text-text-secondary">Based on 30 days</span>
-        </div>
-      </div>
+      <EditableStat
+        label="Avg Daily"
+        value={stats?.avgDaily || 0}
+        icon={<Calculator className="h-6 w-6 text-yellow-500" />}
+        colorClass="bg-yellow-50"
+        onUpdate={api.stats.setAvgDaily}
+        testId="avg-daily"
+      />
     </div>
   );
 }

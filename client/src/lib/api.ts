@@ -61,4 +61,19 @@ export const api = {
       return response.json();
     },
   },
+  
+  stats: {
+    setTodayTotal: async (amount: number): Promise<void> => {
+      await apiRequest("POST", "/api/stats/set-today", { amount });
+    },
+    setMonthTotal: async (amount: number): Promise<void> => {
+      await apiRequest("POST", "/api/stats/set-month", { amount });
+    },
+    setAvgDaily: async (amount: number): Promise<void> => {
+      await apiRequest("POST", "/api/stats/set-avg-daily", { amount });
+    },
+    setBudget: async (amount: number): Promise<void> => {
+      await apiRequest("POST", "/api/stats/set-budget", { amount });
+    },
+  },
 };
