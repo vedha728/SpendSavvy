@@ -142,7 +142,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             amount: result.amount.toString(),
             category: result.category,
             description: result.description,
-            date: new Date(), // Always use current date for chatbot entries
+            date: result.date ? new Date(result.date) : new Date(),
           };
           
           const validatedData = insertExpenseSchema.parse(expenseData);
@@ -150,41 +150,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
           
           result.response_text = `Great! I've added your expense: ₹${result.amount} for ${result.description} in the ${result.category} category.`;
         } catch (error) {
-          console.error("Chat expense creation error:", error);
           result.response_text = "I understood your expense details, but couldn't save it. Please try using the form instead.";
         }
       }
       
-      // If it's a query intent, get relevant data and provide insights
+      // If it's a query intent, get relevant data
       if (result.intent === "query_expenses") {
         const expenses = await storage.getExpenses();
-        
-        // Calculate specific stats based on query type
-        if (result.query_type === "today") {
-          const today = new Date();
-          const todayExpenses = expenses.filter(e => {
-            const expenseDate = new Date(e.date);
-            return expenseDate.toDateString() === today.toDateString();
-          });
-          const todayTotal = todayExpenses.reduce((sum, e) => sum + parseFloat(e.amount), 0);
-          result.response_text = todayTotal === 0 
-            ? "Great! You haven't spent anything today yet. Keep up the good work!" 
-            : `You've spent ₹${todayTotal.toFixed(0)} today across ${todayExpenses.length} transaction(s).`;
-        } else if (result.query_type === "month") {
-          const today = new Date();
-          const monthExpenses = expenses.filter(e => {
-            const expenseDate = new Date(e.date);
-            return expenseDate.getMonth() === today.getMonth() && expenseDate.getFullYear() === today.getFullYear();
-          });
-          const monthTotal = monthExpenses.reduce((sum, e) => sum + parseFloat(e.amount), 0);
-          result.response_text = monthTotal === 0 
-            ? "You haven't recorded any expenses this month yet." 
-            : `This month you've spent ₹${monthTotal.toFixed(0)} across ${monthExpenses.length} transaction(s).`;
-        } else {
-          // Use AI insights or fallback
-          const insights = await generateExpenseInsights(expenses, message);
-          result.response_text = insights;
-        }
+        const insights = await generateExpenseInsights(expenses, message);
+        result.response_text = insights;
       }
       
       res.json(result);
