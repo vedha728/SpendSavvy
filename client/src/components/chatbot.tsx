@@ -4,6 +4,7 @@ import { MessageCircle, X, Send, Bot } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { api } from "@/lib/api";
+import { queryClient } from "@/lib/queryClient";
 
 interface Message {
   id: string;
@@ -34,6 +35,12 @@ export default function Chatbot() {
         timestamp: new Date(),
       };
       setMessages(prev => [...prev, botMessage]);
+      
+      // If an expense was added, refresh the expense data
+      if (response.intent === "add_expense") {
+        queryClient.invalidateQueries({ queryKey: ["/api/expenses"] });
+        queryClient.invalidateQueries({ queryKey: ["/api/expenses/analytics/stats"] });
+      }
     },
     onError: () => {
       const errorMessage: Message = {
