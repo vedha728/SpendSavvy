@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Wallet, University } from "lucide-react";
 import QuickStats from "@/components/quick-stats";
 import ExpenseForm from "@/components/expense-form";
@@ -6,6 +7,8 @@ import ExpenseCharts from "@/components/expense-charts";
 import Chatbot from "@/components/chatbot";
 
 export default function Dashboard() {
+  const [activeFilter, setActiveFilter] = useState("today");
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
@@ -41,13 +44,13 @@ export default function Dashboard() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Expense Form */}
           <div className="lg:col-span-1">
-            <ExpenseForm />
+            <ExpenseForm activeFilter={activeFilter} setActiveFilter={setActiveFilter} />
           </div>
 
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-6">
             <ExpenseCharts />
-            <ExpenseList />
+            <ExpenseList activeFilter={activeFilter} />
           </div>
         </div>
       </div>

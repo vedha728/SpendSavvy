@@ -21,10 +21,14 @@ const quickFilters = [
   { label: "Travel", value: "travel" },
 ];
 
-export default function ExpenseForm() {
+interface ExpenseFormProps {
+  activeFilter: string;
+  setActiveFilter: (filter: string) => void;
+}
+
+export default function ExpenseForm({ activeFilter, setActiveFilter }: ExpenseFormProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const [activeFilter, setActiveFilter] = useState("today");
 
   const form = useForm<InsertExpense>({
     resolver: zodResolver(insertExpenseSchema),

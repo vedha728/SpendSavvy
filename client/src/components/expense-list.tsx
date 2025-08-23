@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Edit, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -7,15 +7,55 @@ import { api } from "@/lib/api";
 import { categories } from "@shared/schema";
 import type { Expense } from "@shared/schema";
 
-export default function ExpenseList() {
+interface ExpenseListProps {
+  activeFilter: string;
+}
+
+export default function ExpenseList({ activeFilter }: ExpenseListProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [visibleCount, setVisibleCount] = useState(5);
 
-  const { data: expenses = [], isLoading } = useQuery({
+  const { data: allExpenses = [], isLoading } = useQuery({
     queryKey: ["/api/expenses"],
     queryFn: () => api.expenses.getAll(),
   });
+
+  const filteredExpenses = useMemo(() => {
+    if (!allExpenses.length) return [];
+
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const startOfWeek = new Date(today);
+    startOfWeek.setDate(today.getDate() - today.getDay());
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+
+    switch (activeFilter) {
+      case "today":
+        return allExpenses.filter(expense => {
+          const expenseDate = new Date(expense.date);
+          const expenseDay = new Date(expenseDate.getFullYear(), expenseDate.getMonth(), expenseDate.getDate());
+          return expenseDay.getTime() === today.getTime();
+        });
+      case "week":
+        return allExpenses.filter(expense => {
+          const expenseDate = new Date(expense.date);
+          return expenseDate >= startOfWeek;
+        });
+      case "month":
+        return allExpenses.filter(expense => {
+          const expenseDate = new Date(expense.date);
+          return expenseDate >= startOfMonth;
+        });
+      case "canteen":
+      case "travel":
+        return allExpenses.filter(expense => expense.category === activeFilter);
+      default:
+        return allExpenses;
+    }
+  }, [allExpenses, activeFilter]);
+
+  const expenses = filteredExpenses;
 
   const deleteExpenseMutation = useMutation({
     mutationFn: api.expenses.delete,
@@ -103,15 +143,48 @@ export default function ExpenseList() {
     <div className="bg-surface rounded-xl shadow-sm border border-gray-100">
       <div className="p-6 border-b border-gray-100">
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-text-primary">Recent Expenses</h2>
-          <span className="text-primary text-sm font-medium">{expenses.length} total</span>
+          <div>
+            <h2 className="text-lg font-semibold text-text-primary">
+              {activeFilter === "today" && "Today's Expenses"}
+              {activeFilter === "week" && "This Week's Expenses"}
+              {activeFilter === "month" && "This Month's Expenses"}
+              {activeFilter === "canteen" && "Canteen Expenses"}
+              {activeFilter === "travel" && "Travel Expenses"}
+            </h2>
+            <p className="text-xs text-text-secondary mt-1">
+              Filtered by: {
+                activeFilter === "today" ? "Today" :
+                activeFilter === "week" ? "This Week" :
+                activeFilter === "month" ? "This Month" :
+                activeFilter === "canteen" ? "Canteen" :
+                activeFilter === "travel" ? "Travel" : "All"
+              }
+            </p>
+          </div>
+          <span className="text-primary text-sm font-medium">{expenses.length} found</span>
         </div>
       </div>
       <div className="divide-y divide-gray-100">
         {visibleExpenses.length === 0 ? (
           <div className="p-8 text-center">
-            <p className="text-text-secondary">No expenses recorded yet.</p>
-            <p className="text-sm text-text-secondary mt-1">Start by adding your first expense!</p>
+            <p className="text-text-secondary">
+              {allExpenses.length === 0 
+                ? "No expenses recorded yet." 
+                : `No expenses found for ${
+                    activeFilter === "today" ? "today" :
+                    activeFilter === "week" ? "this week" :
+                    activeFilter === "month" ? "this month" :
+                    activeFilter === "canteen" ? "canteen" :
+                    activeFilter === "travel" ? "travel" : "this filter"
+                  }.`
+              }
+            </p>
+            <p className="text-sm text-text-secondary mt-1">
+              {allExpenses.length === 0 
+                ? "Start by adding your first expense!" 
+                : "Try a different filter or add a new expense."
+              }
+            </p>
           </div>
         ) : (
           visibleExpenses.map((expense: Expense) => (
