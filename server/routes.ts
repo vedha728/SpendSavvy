@@ -154,11 +154,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
       
-      // If it's a query intent, get relevant data
+      // If it's a query intent, get relevant data and provide insights
       if (result.intent === "query_expenses") {
         const expenses = await storage.getExpenses();
-        const insights = await generateExpenseInsights(expenses, message);
-        result.response_text = insights;
+        
+        // Calculate specific stats based on query type
+        if (result.query_type === "today") {
+          const today = new Date();
+          const todayExpenses = expenses.filter(e => {
+            const expenseDate = new Date(e.date);
+            return expenseDate.toDateString() === today.toDateString();
+          });
+          const todayTotal = todayExpenses.reduce((sum, e) => sum + parseFloat(e.amount), 0);
+          result.response_text = todayTotal === 0 
+            ? "Great! You haven't spent anything today yet. Keep up the good work!" 
+            : `You've spent ₹${todayTotal.toFixed(0)} today across ${todayExpenses.length} transaction(s).`;
+        } else if (result.query_type === "month") {
+          const today = new Date();
+          const monthExpenses = expenses.filter(e => {
+            const expenseDate = new Date(e.date);
+            return expenseDate.getMonth() === today.getMonth() && expenseDate.getFullYear() === today.getFullYear();
+          });
+          const monthTotal = monthExpenses.reduce((sum, e) => sum + parseFloat(e.amount), 0);
+          result.response_text = monthTotal === 0 
+            ? "You haven't recorded any expenses this month yet." 
+            : `This month you've spent ₹${monthTotal.toFixed(0)} across ${monthExpenses.length} transaction(s).`;
+        } else {
+          // Use AI insights or fallback
+          const insights = await generateExpenseInsights(expenses, message);
+          result.response_text = insights;
+        }
       }
       
       res.json(result);
