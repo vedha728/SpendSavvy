@@ -66,9 +66,26 @@ Respond with JSON only.
     return result as ExpenseIntentResult;
   } catch (error) {
     console.error("OpenAI API error:", error);
+    
+    // Check if it's a quota/billing issue
+    if (error instanceof Error && error.message.includes('quota')) {
+      return {
+        intent: "unclear",
+        response_text: "I'm currently unable to help due to API quota limits. Please check your OpenAI account billing and usage at platform.openai.com/usage",
+      };
+    }
+    
+    // Check if it's a rate limit issue
+    if (error instanceof Error && error.message.includes('rate limit')) {
+      return {
+        intent: "unclear", 
+        response_text: "I'm being rate limited. Please wait a moment and try again.",
+      };
+    }
+    
     return {
       intent: "unclear",
-      response_text: "I'm having trouble understanding your request. Can you please rephrase it?",
+      response_text: "I'm having trouble connecting to my AI service right now. Please try again in a moment.",
     };
   }
 }
@@ -101,6 +118,17 @@ Provide a concise, helpful response about their spending patterns, suggestions, 
     return response.choices[0].message.content || "I couldn't analyze your expenses right now.";
   } catch (error) {
     console.error("OpenAI API error:", error);
-    return "I'm having trouble analyzing your expenses at the moment.";
+    
+    // Check if it's a quota/billing issue
+    if (error instanceof Error && error.message.includes('quota')) {
+      return "I'm currently unable to analyze your expenses due to API quota limits. Please check your OpenAI account billing and usage at platform.openai.com/usage";
+    }
+    
+    // Check if it's a rate limit issue
+    if (error instanceof Error && error.message.includes('rate limit')) {
+      return "I'm being rate limited. Please wait a moment and try your question again.";
+    }
+    
+    return "I'm having trouble connecting to my AI service right now. Please try again in a moment.";
   }
 }
