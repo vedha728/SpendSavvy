@@ -29,9 +29,6 @@ export default function Dashboard() {
                 <University className="text-primary text-sm" />
                 <span className="text-sm font-medium">SASTRA University</span>
               </div>
-              <div className="w-9 h-9 bg-primary rounded-full flex items-center justify-center">
-                <span className="text-white text-sm font-semibold">AK</span>
-              </div>
             </div>
           </div>
         </div>
