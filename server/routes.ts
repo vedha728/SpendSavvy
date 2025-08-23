@@ -142,7 +142,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             amount: result.amount.toString(),
             category: result.category,
             description: result.description,
-            date: result.date ? new Date(result.date) : new Date(),
+            date: new Date(), // Always use current date for chatbot entries
           };
           
           const validatedData = insertExpenseSchema.parse(expenseData);
@@ -150,6 +150,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           
           result.response_text = `Great! I've added your expense: ₹${result.amount} for ${result.description} in the ${result.category} category.`;
         } catch (error) {
+          console.error("Chat expense creation error:", error);
           result.response_text = "I understood your expense details, but couldn't save it. Please try using the form instead.";
         }
       }
