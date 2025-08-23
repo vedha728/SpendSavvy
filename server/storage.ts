@@ -10,13 +10,19 @@ export interface IStorage {
   deleteExpense(id: string): Promise<boolean>;
   getExpensesByDateRange(startDate: Date, endDate: Date): Promise<Expense[]>;
   getExpensesByCategory(category: string): Promise<Expense[]>;
+  
+  // Budget operations
+  getBudget(): Promise<number>;
+  setBudget(amount: number): Promise<void>;
 }
 
 export class MemStorage implements IStorage {
   private expenses: Map<string, Expense>;
+  private monthlyBudget: number;
 
   constructor() {
     this.expenses = new Map();
+    this.monthlyBudget = 10000; // Default budget
   }
 
   async getExpenses(): Promise<Expense[]> {
@@ -67,6 +73,14 @@ export class MemStorage implements IStorage {
     return Array.from(this.expenses.values()).filter(expense => 
       expense.category === category
     ).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  }
+
+  async getBudget(): Promise<number> {
+    return this.monthlyBudget;
+  }
+
+  async setBudget(amount: number): Promise<void> {
+    this.monthlyBudget = amount;
   }
 }
 

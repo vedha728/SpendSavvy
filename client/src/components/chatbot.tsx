@@ -36,8 +36,8 @@ export default function Chatbot() {
       };
       setMessages(prev => [...prev, botMessage]);
       
-      // If an expense was added, refresh the expense data
-      if (response.intent === "add_expense") {
+      // If an expense was added or budget was set, refresh the data
+      if (response.intent === "add_expense" || response.intent === "set_budget") {
         queryClient.invalidateQueries({ queryKey: ["/api/expenses"] });
         queryClient.invalidateQueries({ queryKey: ["/api/expenses/analytics/stats"] });
       }
@@ -176,14 +176,21 @@ export default function Chatbot() {
                 className="px-2 py-1 bg-gray-100 rounded-full text-xs text-text-secondary hover:bg-gray-200 transition-colors"
                 data-testid="button-quick-query-today"
               >
-                "How much did I spend today?"
+                Today's spending?
               </button>
               <button
-                onClick={() => handleQuickQuery("Add ₹50 canteen")}
+                onClick={() => handleQuickQuery("Add ₹50 canteen lunch")}
                 className="px-2 py-1 bg-gray-100 rounded-full text-xs text-text-secondary hover:bg-gray-200 transition-colors"
                 data-testid="button-quick-query-add"
               >
-                "Add ₹50 canteen"
+                Add expense
+              </button>
+              <button
+                onClick={() => handleQuickQuery("Set my budget to ₹5000")}
+                className="px-2 py-1 bg-gray-100 rounded-full text-xs text-text-secondary hover:bg-gray-200 transition-colors"
+                data-testid="button-quick-query-budget"
+              >
+                Set budget
               </button>
             </div>
           </div>

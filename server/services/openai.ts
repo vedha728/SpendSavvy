@@ -9,13 +9,14 @@ import { GoogleGenAI } from "@google/genai";
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || "" });
 
 export interface ExpenseIntentResult {
-  intent: "add_expense" | "query_expenses" | "general_help" | "unclear";
+  intent: "add_expense" | "query_expenses" | "set_budget" | "general_help" | "unclear";
   amount?: number;
   category?: string;
   description?: string;
   date?: string;
   query_type?: "total" | "today" | "month" | "category" | "recent";
   category_filter?: string;
+  budget_amount?: number;
   response_text: string;
 }
 
@@ -26,14 +27,18 @@ export async function processExpenseQuery(userMessage: string): Promise<ExpenseI
 Possible intents:
 1. "add_expense" - User wants to add a new expense
 2. "query_expenses" - User wants to know about their spending
-3. "general_help" - User needs help using the app
-4. "unclear" - Message is unclear
+3. "set_budget" - User wants to set their monthly budget
+4. "general_help" - User needs help using the app
+5. "unclear" - Message is unclear
 
 If intent is "add_expense", extract:
 - amount (number)
 - category (canteen, travel, books, mobile, accommodation, entertainment, medical, clothing, stationery, others)
 - description (what they bought)
 - date (if mentioned, otherwise use today)
+
+If intent is "set_budget", extract:
+- budget_amount (number) - the budget amount the user wants to set
 
 If intent is "query_expenses", determine query_type:
 - "total" - total spending
@@ -45,7 +50,7 @@ If intent is "query_expenses", determine query_type:
 Provide a helpful response_text for the user.
 
 Respond with JSON in this format:
-{'intent': string, 'amount': number, 'category': string, 'description': string, 'date': string, 'query_type': string, 'category_filter': string, 'response_text': string}`;
+{'intent': string, 'amount': number, 'category': string, 'description': string, 'date': string, 'query_type': string, 'category_filter': string, 'budget_amount': number, 'response_text': string}`;
 
     const response = await ai.models.generateContent({
       model: "gemini-2.5-flash",
@@ -62,6 +67,7 @@ Respond with JSON in this format:
             date: { type: "string" },
             query_type: { type: "string" },
             category_filter: { type: "string" },
+            budget_amount: { type: "number" },
             response_text: { type: "string" },
           },
           required: ["intent", "response_text"],

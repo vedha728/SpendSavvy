@@ -99,8 +99,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const todayTotal = todayExpenses.reduce((sum, e) => sum + parseFloat(e.amount), 0);
       const monthTotal = monthExpenses.reduce((sum, e) => sum + parseFloat(e.amount), 0);
       
-      // Simple budget calculation (assuming 10000 monthly budget)
-      const monthlyBudget = 10000;
+      // Get dynamic budget from storage
+      const monthlyBudget = await storage.getBudget();
       const budgetLeft = monthlyBudget - monthTotal;
       
       // Average daily spending for last 30 days
@@ -159,6 +159,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const expenses = await storage.getExpenses();
         const insights = await generateExpenseInsights(expenses, message);
         result.response_text = insights;
+      }
+      
+      // If it's a set budget intent, update the budget
+      if (result.intent === "set_budget" && result.budget_amount) {
+        try {
+          await storage.setBudget(result.budget_amount);
+          result.response_text = `Perfect! I've set your monthly budget to ₹${result.budget_amount}. You can now track how much you have left to spend each month.`;
+        } catch (error) {
+          result.response_text = "I understood you want to set a budget, but couldn't save it. Please try again.";
+        }
       }
       
       res.json(result);
