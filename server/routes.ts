@@ -193,16 +193,62 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // If it's an add expense intent, try to create the expense
       if (result.intent === "add_expense" && result.amount && result.category && result.description) {
         try {
+          // Extract date from original message if Gemini didn't provide it
+          let extractedDate = result.date;
+          if (!extractedDate) {
+            // Try to extract date from original message using regex
+            const datePatterns = [
+              /(\d{1,2})\s+(january|february|march|april|may|june|july|august|september|october|november|december)\s+(\d{4})/i,
+              /(\d{1,2})\s+(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)\s+(\d{4})/i,
+              /(\d{1,2})\/(\d{1,2})\/(\d{4})/,
+              /(\d{4})-(\d{1,2})-(\d{1,2})/
+            ];
+            
+            for (const pattern of datePatterns) {
+              const match = message.match(pattern);
+              if (match) {
+                if (pattern.source.includes('january|february')) {
+                  // Format: "15 july 2024"
+                  const day = match[1].padStart(2, '0');
+                  const monthNames = ['january','february','march','april','may','june','july','august','september','october','november','december'];
+                  const month = (monthNames.indexOf(match[2].toLowerCase()) + 1).toString().padStart(2, '0');
+                  const year = match[3];
+                  extractedDate = `${year}-${month}-${day}`;
+                  break;
+                } else if (pattern.source.includes('jan|feb')) {
+                  // Format: "15 jul 2024"
+                  const day = match[1].padStart(2, '0');
+                  const monthAbbr = ['jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec'];
+                  const month = (monthAbbr.indexOf(match[2].toLowerCase()) + 1).toString().padStart(2, '0');
+                  const year = match[3];
+                  extractedDate = `${year}-${month}-${day}`;
+                  break;
+                } else if (pattern.source.includes('\\/')) {
+                  // Format: "15/07/2024"
+                  const day = match[1].padStart(2, '0');
+                  const month = match[2].padStart(2, '0');
+                  const year = match[3];
+                  extractedDate = `${year}-${month}-${day}`;
+                  break;
+                } else {
+                  // Format: "2024-07-15"
+                  extractedDate = match[0];
+                  break;
+                }
+              }
+            }
+          }
+          
           // Handle special date cases
-          if (result.date?.startsWith("NEED_YEAR:")) {
-            const partialDate = result.date.replace("NEED_YEAR:", "");
+          if (extractedDate?.startsWith("NEED_YEAR:")) {
+            const partialDate = extractedDate.replace("NEED_YEAR:", "");
             result.response_text = `I understood your expense: ₹${result.amount} for ${result.description}. But I need to know which year you meant for "${partialDate}". Please specify like "${partialDate} 2024" or "${partialDate} 2025".`;
             res.json(result);
             return;
           }
           
-          if (result.date?.startsWith("NEED_CLARIFICATION:")) {
-            const vagueTerm = result.date.replace("NEED_CLARIFICATION:", "");
+          if (extractedDate?.startsWith("NEED_CLARIFICATION:")) {
+            const vagueTerm = extractedDate.replace("NEED_CLARIFICATION:", "");
             result.response_text = `I understood your expense: ₹${result.amount} for ${result.description}. Could you be more specific about "${vagueTerm}"? Please provide an exact date like "august 10 2025" or "08/10/2025".`;
             res.json(result);
             return;
@@ -210,15 +256,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
           // Process the date
           let expenseDate: Date;
-          if (!result.date || result.date === "TODAY") {
+          if (!extractedDate || extractedDate === "TODAY") {
             expenseDate = new Date();
           } else {
             // Try to parse the date
-            expenseDate = new Date(result.date);
+            expenseDate = new Date(extractedDate);
             
             // Validate the parsed date
             if (isNaN(expenseDate.getTime())) {
-              result.response_text = `I understood your expense: ₹${result.amount} for ${result.description}, but I couldn't understand the date "${result.date}". Please use formats like "august 10 2025" or "08/10/2025".`;
+              result.response_text = `I understood your expense: ₹${result.amount} for ${result.description}, but I couldn't understand the date "${extractedDate}". Please use formats like "august 10 2025" or "08/10/2025".`;
               res.json(result);
               return;
             }

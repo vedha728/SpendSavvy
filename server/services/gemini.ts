@@ -93,13 +93,15 @@ If intent is "add_expense", extract:
 - amount (number)
 - category (canteen, travel, books, mobile, accommodation, entertainment, medical, clothing, stationery, others)
 - description (what they bought)
-- date (CRITICAL: Parse dates carefully):
-  * If specific date with year is mentioned like "july 10 2024", "august 10 2025", "08/10/2025", "2025-08-10" → return exact ISO format "2024-07-10", "2025-08-10"
-  * If date without year like "august 10", "august 05", "08/10", "05/08" → return "NEED_YEAR:august 05" or "NEED_YEAR:08/10"
+- date (CRITICAL: Parse dates carefully and return EXACT date strings):
+  * If specific date with year is mentioned like "15 july 2024", "july 10 2024", "august 10 2025" → return exact ISO format like "2024-07-15", "2024-07-10", "2025-08-10"
+  * If date formats like "08/10/2025", "2025-08-10" → return exact ISO format "2025-08-10"
+  * If date without year like "august 10", "august 05", "08/10" → return "NEED_YEAR:august 10" or "NEED_YEAR:08/10"
   * If "today", "yesterday" → calculate and return proper ISO date (YYYY-MM-DD)
-  * If "last week", "last month" → return "NEED_CLARIFICATION:last week"
+  * If "last week", "last month" → return "NEED_CLARIFICATION:last week"  
   * If no date mentioned → return "TODAY"
-  * IMPORTANT: If user says "july 10 2024" this means July 10, 2024 NOT today's date
+  * EXAMPLES: "15 july 2024" → "2024-07-15", "july 5 2024" → "2024-07-05", "december 25 2023" → "2023-12-25"
+  * IMPORTANT: Always return ONLY the date in ISO format (YYYY-MM-DD), nothing else in the date field
 
 If intent is "add_debt", extract:
 - friend_name (string) - name of the friend (extract from patterns like "friend name: harish", "harish owes", "I owe harish")
@@ -135,8 +137,24 @@ If intent is "query_expenses", determine query_type:
 
 Provide a helpful response_text for the user.
 
-Respond with JSON in this format:
-{'intent': string, 'amount': number, 'category': string, 'description': string, 'date': string, 'query_type': string, 'category_filter': string, 'budget_amount': number, 'friend_name': string, 'debt_amount': number, 'debt_type': string, 'debt_description': string, 'response_text': string}`;
+CRITICAL: Always include the 'date' field in your response, even if it's "TODAY" or null.
+
+Respond with JSON in this exact format (all fields required):
+{
+  "intent": "add_expense",
+  "amount": 500,
+  "category": "canteen", 
+  "description": "lunch",
+  "date": "2024-07-15",
+  "query_type": null,
+  "category_filter": null,
+  "budget_amount": null,
+  "friend_name": null,
+  "debt_amount": null,
+  "debt_type": null,
+  "debt_description": null,
+  "response_text": "Great! I've added your expense..."
+}`;
 
     const response = await ai.models.generateContent({
       model: "gemini-2.5-flash",
@@ -146,21 +164,22 @@ Respond with JSON in this format:
         responseSchema: {
           type: "object",
           properties: {
-            intent: { type: "string" },
-            amount: { type: "number" },
-            category: { type: "string" },
-            description: { type: "string" },
-            date: { type: "string" },
-            query_type: { type: "string" },
-            category_filter: { type: "string" },
-            budget_amount: { type: "number" },
-            friend_name: { type: "string" },
-            debt_amount: { type: "number" },
-            debt_type: { type: "string" },
-            debt_description: { type: "string" },
+            intent: { type: "string", enum: ["add_expense", "add_debt", "query_expenses", "query_debts", "set_budget", "general_help", "unclear"] },
+            amount: { type: ["number", "null"] },
+            category: { type: ["string", "null"] },
+            description: { type: ["string", "null"] },
+            date: { type: ["string", "null"] },
+            query_type: { type: ["string", "null"] },
+            category_filter: { type: ["string", "null"] },
+            budget_amount: { type: ["number", "null"] },
+            friend_name: { type: ["string", "null"] },
+            debt_amount: { type: ["number", "null"] },
+            debt_type: { type: ["string", "null"] },
+            debt_description: { type: ["string", "null"] },
             response_text: { type: "string" },
           },
-          required: ["intent", "response_text"],
+          required: ["intent", "response_text", "date"],
+          additionalProperties: false,
         },
       },
       contents: userMessage,
