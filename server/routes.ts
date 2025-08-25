@@ -287,10 +287,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
             day: 'numeric' 
           });
           
+          const categoryEmojis: {[key: string]: string} = {
+            canteen: '🍽️', travel: '🚌', books: '📚', mobile: '📱',
+            accommodation: '🏠', entertainment: '🎬', medical: '💊',
+            clothing: '👕', stationery: '✏️', others: '📦'
+          };
+          const emoji = categoryEmojis[result.category] || '💰';
+          
           if (expenseDate.toDateString() === new Date().toDateString()) {
-            result.response_text = `Great! I've added your expense: ₹${result.amount} for ${result.description} in the ${result.category} category for today.`;
+            result.response_text = `${emoji} Perfect! Added ₹${result.amount} for ${result.description} in ${result.category} category today. Keep tracking! 📊`;
           } else {
-            result.response_text = `Great! I've added your expense: ₹${result.amount} for ${result.description} in the ${result.category} category for ${dateStr}.`;
+            result.response_text = `${emoji} Expense recorded! ₹${result.amount} for ${result.description} in ${result.category} on ${dateStr}. Great memory! 🧠`;
           }
         } catch (error) {
           result.response_text = "I understood your expense details, but couldn't save it. Please try using the form instead.";
@@ -308,9 +315,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (result.intent === "set_budget" && result.budget_amount !== undefined) {
         try {
           await storage.setBudget(result.budget_amount);
-          result.response_text = `Perfect! I've set your monthly budget to ₹${result.budget_amount}. You can now track how much you have left to spend each month.`;
+          if (result.budget_amount === 0) {
+            result.response_text = `✅ Budget reset! I've set your monthly budget to ₹0. You're now in unlimited spending mode - but I'll still track your expenses!`;
+          } else {
+            result.response_text = `🎯 Perfect! I've set your monthly budget to ₹${result.budget_amount}. You can now track how much you have left to spend each month!`;
+          }
         } catch (error) {
           result.response_text = "I understood you want to set a budget, but couldn't save it. Please try again.";
+        }
+      }
+
+      // If it's a reset today intent, clear today's spending
+      if (result.intent === "reset_today") {
+        try {
+          await storage.setTodayTotal(0);
+          result.response_text = `🧹 Done! I've reset today's spending to ₹0. Your expense history is still safe, but today's total now shows zero.`;
+        } catch (error) {
+          result.response_text = "I understood you want to reset today's spending, but couldn't do it. Please try again.";
         }
       }
 
@@ -328,8 +349,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
           const validatedData = insertDebtSchema.parse(debtData);
           await storage.createDebt(validatedData);
           
+          const emoji = result.debt_type === "I_OWE_THEM" ? "💸" : "💰";
           const typeText = result.debt_type === "I_OWE_THEM" ? "you owe" : "they owe you";
-          result.response_text = `Great! I've added the debt record: ${typeText} ${result.friend_name} ₹${result.debt_amount} for ${result.debt_description}.`;
+          result.response_text = `${emoji} Debt tracked! ${typeText} ${result.friend_name} ₹${result.debt_amount} for ${result.debt_description}. Money matters sorted! 📝`;
         } catch (error) {
           result.response_text = "I understood your debt details, but couldn't save it. Please try again.";
         }

@@ -9,7 +9,7 @@ import { GoogleGenAI } from "@google/genai";
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || "" });
 
 export interface ExpenseIntentResult {
-  intent: "add_expense" | "add_debt" | "query_expenses" | "query_debts" | "set_budget" | "general_help" | "unclear";
+  intent: "add_expense" | "add_debt" | "query_expenses" | "query_debts" | "set_budget" | "reset_today" | "general_help" | "unclear";
   amount?: number;
   category?: string;
   description?: string;
@@ -26,8 +26,25 @@ export interface ExpenseIntentResult {
 
 export async function processExpenseQuery(userMessage: string): Promise<ExpenseIntentResult> {
   try {
-    // Quick pattern matching for debt commands to avoid API timeouts
+    // Quick pattern matching for common commands to avoid API timeouts
     const message = userMessage.toLowerCase();
+    
+    // Pattern matching for reset today commands
+    if (message.includes('reset today') || message.includes('clear today') || (message.includes('set today') && message.includes('0'))) {
+      return {
+        intent: "reset_today",
+        response_text: "🧹 I'll reset today's spending to ₹0 for you!"
+      };
+    }
+    
+    // Pattern matching for budget setting to 0
+    if ((message.includes('budget') && message.includes('0')) || message.includes('remove budget') || message.includes('no budget')) {
+      return {
+        intent: "set_budget",
+        budget_amount: 0,
+        response_text: "✅ I'll remove your budget limit!"
+      };
+    }
     
     // Pattern matching for debt commands
     if (message.includes('debt') || message.includes('owe') || message.includes('lend') || message.includes('borrow')) {
@@ -60,13 +77,14 @@ export async function processExpenseQuery(userMessage: string): Promise<ExpenseI
         );
         const debt_description = descriptionWords.join(' ') || 'expense';
         
+        const emoji = debt_type === "I_OWE_THEM" ? "💸" : "💰";
         return {
           intent: "add_debt",
           friend_name,
           debt_amount,
           debt_type,
           debt_description,
-          response_text: `Great! I've added the debt record: ${debt_type === "I_OWE_THEM" ? "you owe" : "they owe you"} ${friend_name} ₹${debt_amount} for ${debt_description}.`
+          response_text: `${emoji} Debt recorded! ${debt_type === "I_OWE_THEM" ? "You owe" : "They owe you"} ${friend_name} ₹${debt_amount} for ${debt_description}. Keep track of your money! 📝`
         };
       }
     }
@@ -80,9 +98,10 @@ Possible intents:
 2. "add_debt" - User wants to add a debt record (money owed/borrowed)
 3. "query_expenses" - User wants to know about their spending
 4. "query_debts" - User wants to know about their debts
-5. "set_budget" - User wants to set their monthly budget
-6. "general_help" - User needs help using the app
-7. "unclear" - Message is unclear
+5. "set_budget" - User wants to set their monthly budget (including setting to 0)
+6. "reset_today" - User wants to reset today's spending to zero
+7. "general_help" - User needs help using the app
+8. "unclear" - Message is unclear
 
 DEBT KEYWORDS to look for:
 - "debt", "debts", "owe", "owes", "owed", "lent", "lend", "borrow", "borrowed", "loan"
@@ -120,13 +139,17 @@ EXAMPLES of debt intent:
 If intent is "set_budget", extract:
 - budget_amount (number) - the budget amount the user wants to set (can be 0 to remove budget)
 
+If intent is "reset_today", this means:
+- User wants to reset today's spending to zero
+- Examples: "reset today's spending", "clear today", "make today 0", "set today's spending to zero"
+
 If intent is "query_debts", determine query_type:
 - "total_owed" - how much they owe others
 - "total_owing" - how much others owe them
 - "net_balance" - net debt balance
 - "list" - list of debts
 
-IMPORTANT: If user asks to "reset today's spending", "make today's spending 0", "clear today", respond with intent "unclear" and explain this is not allowed for accuracy.
+IMPORTANT: If user asks to "reset today's spending", "make today's spending 0", "clear today", use intent "reset_today".
 
 If intent is "query_expenses", determine query_type:
 - "total" - total spending
@@ -164,7 +187,7 @@ Respond with JSON in this exact format (all fields required):
         responseSchema: {
           type: "object",
           properties: {
-            intent: { type: "string", enum: ["add_expense", "add_debt", "query_expenses", "query_debts", "set_budget", "general_help", "unclear"] },
+            intent: { type: "string", enum: ["add_expense", "add_debt", "query_expenses", "query_debts", "set_budget", "reset_today", "general_help", "unclear"] },
             amount: { type: ["number", "null"] },
             category: { type: ["string", "null"] },
             description: { type: ["string", "null"] },
@@ -213,7 +236,7 @@ Respond with JSON in this exact format (all fields required):
     
     return {
       intent: "unclear",
-      response_text: "I'm having trouble connecting to my AI service right now. Please try again in a moment.",
+      response_text: "💭 I'm having trouble understanding right now. Try asking something like:\n\n• \"I spent ₹50 on lunch\"\n• \"Set my budget to ₹3000\"\n• \"How much did I spend today?\"\n• \"Reset today's spending\"\n\nI'm here to help with your expenses! 😊",
     };
   }
 }
@@ -222,7 +245,7 @@ export async function generateExpenseInsights(expenses: any[], query: string): P
   try {
     // Handle the case when there are no expenses
     if (!expenses || expenses.length === 0) {
-      return "You haven't recorded any expenses yet. Start by adding your first expense using the form above or tell me something like 'I spent ₹50 on coffee at canteen'.";
+      return "🌟 Welcome to EXPENZA! You haven't recorded any expenses yet. Let's start your financial journey!\n\n💡 Try saying:\n• \"I spent ₹50 on lunch\"\n• \"Set my budget to ₹5000\"\n• \"I bought books for ₹200\"\n\nI'm here to help you track, save, and thrive! 🚀";
     }
 
     // Calculate basic stats from expenses
@@ -240,13 +263,13 @@ export async function generateExpenseInsights(expenses: any[], query: string): P
     
     if (queryLower.includes('today') || queryLower.includes("today's")) {
       if (todayTotal === 0) {
-        return "Great news! You haven't spent anything today yet. Your wallet is safe! 💸";
+        return "🎉 Great news! You haven't spent anything today yet. Your wallet is happy! 💰";
       }
-      return `Today you've spent ₹${todayTotal.toFixed(0)} across ${todayExpenses.length} expense${todayExpenses.length !== 1 ? 's' : ''}. ${todayExpenses.map(e => `₹${parseFloat(e.amount).toFixed(0)} on ${e.description}`).join(', ')}.`;
+      return `📊 Today you've spent ₹${todayTotal.toFixed(0)} across ${todayExpenses.length} transaction${todayExpenses.length !== 1 ? 's' : ''}: ${todayExpenses.map(e => `₹${parseFloat(e.amount).toFixed(0)} on ${e.description}`).join(', ')}. ${todayTotal < 100 ? 'Great control! 👍' : todayTotal < 500 ? 'Moderate spending 📈' : 'Watch your budget! ⚠️'}`;
     }
 
     if (queryLower.includes('total') || queryLower.includes('how much')) {
-      return `Your total expenses so far are ₹${totalExpenses.toFixed(0)} across ${expenses.length} transactions. Today's spending: ₹${todayTotal.toFixed(0)}.`;
+      return `💳 Your total expenses are ₹${totalExpenses.toFixed(0)} across ${expenses.length} transactions. Today: ₹${todayTotal.toFixed(0)}. ${expenses.length < 5 ? 'Just getting started! 🌱' : expenses.length < 20 ? 'Good tracking habits! 📈' : 'Expense tracking champion! 🏆'}`;
     }
 
     const systemPrompt = "You are EXPENZA, an AI assistant that helps students in India track, save, and thrive financially. You provide insights about spending patterns and answer questions about expenses and debts. When mentioning amounts, always use Indian Rupees (₹) as the currency symbol. Be conversational, friendly, and provide actionable advice.";

@@ -39,17 +39,39 @@ export default function Chatbot() {
     queryFn: () => api.expenses.getStats(),
   });
 
-  // Add budget setup message when chat opens if budget is 0
+  // Add interactive welcome message when chat opens
   useEffect(() => {
     if (isOpen && stats && stats.monthlyBudget === 0 && !budgetMessageAdded) {
-      const budgetMessage: Message = {
-        id: "budget-setup",
-        text: "🎯 **First set your budget!** Try: \"Set my budget to ₹5000\"",
-        isBot: true,
-        timestamp: new Date(),
-        isHighlight: true,
-      };
-      setMessages(prev => [...prev, budgetMessage]);
+      const welcomeMessages: Message[] = [
+        {
+          id: "welcome-intro",
+          text: "👋 Hey there! I'm your EXPENZA assistant! I can help you:",
+          isBot: true,
+          timestamp: new Date(),
+          isHighlight: true,
+        },
+        {
+          id: "welcome-features",
+          text: "✨ **What I can do:**\n• Track expenses: \"I spent ₹50 on lunch\"\n• Set budgets: \"Set my budget to ₹5000\"\n• Add debts: \"John owes me ₹200\"\n• Get insights: \"How much today?\"\n• Reset data: \"Reset today's spending\"",
+          isBot: true,
+          timestamp: new Date(),
+        },
+        {
+          id: "budget-setup",
+          text: "🎯 **Let's start!** First, tell me your monthly budget or start adding expenses right away!",
+          isBot: true,
+          timestamp: new Date(),
+          isHighlight: true,
+        }
+      ];
+      
+      // Add messages with a small delay between them for better UX
+      welcomeMessages.forEach((msg, index) => {
+        setTimeout(() => {
+          setMessages(prev => [...prev, msg]);
+        }, index * 800);
+      });
+      
       setBudgetMessageAdded(true);
     }
   }, [isOpen, stats, budgetMessageAdded]);
