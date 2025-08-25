@@ -22,7 +22,7 @@ export interface ExpenseIntentResult {
 
 export async function processExpenseQuery(userMessage: string): Promise<ExpenseIntentResult> {
   try {
-    const systemPrompt = `You are an expense tracking assistant for students. Analyze the user's message and determine their intent.
+    const systemPrompt = `You are an expense tracking assistant for students in India. When mentioning amounts, always use Indian Rupees (₹) as the currency symbol. Analyze the user's message and determine their intent.
 
 Possible intents:
 1. "add_expense" - User wants to add a new expense
@@ -111,7 +111,7 @@ Respond with JSON in this format:
 
 export async function generateExpenseInsights(expenses: any[], query: string): Promise<string> {
   try {
-    const systemPrompt = "You are a helpful expense tracking assistant that provides insights about spending patterns and answers questions about expenses.";
+    const systemPrompt = "You are a helpful expense tracking assistant for students in India that provides insights about spending patterns and answers questions about expenses. When mentioning amounts, always use Indian Rupees (₹) as the currency symbol.";
     
     const prompt = `
 Based on the following expense data, provide helpful insights and answer the user's question.
