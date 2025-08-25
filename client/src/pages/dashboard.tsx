@@ -29,26 +29,47 @@ export default function Dashboard() {
         </div>
       </header>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        {/* Quick Stats */}
-        <QuickStats />
-
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
-          {/* Expense Form */}
-          <div className="lg:col-span-1">
-            <ExpenseForm activeFilter={activeFilter} setActiveFilter={setActiveFilter} />
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+        {/* Statistics Section */}
+        <section className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
+          <div className="mb-6">
+            <h2 className="text-2xl font-bold text-gray-800 mb-2">Financial Overview</h2>
+            <p className="text-gray-600">Track your spending across different time periods</p>
           </div>
+          <QuickStats />
+        </section>
 
-          {/* Expense List */}
-          <div className="lg:col-span-2">
-            <ExpenseList activeFilter={activeFilter} />
+        {/* Management Section */}
+        <section className="bg-white rounded-2xl shadow-lg border border-gray-100">
+          <div className="p-6 border-b border-gray-100">
+            <h2 className="text-2xl font-bold text-gray-800 mb-2">Expense Management</h2>
+            <p className="text-gray-600">Add new expenses and filter your transaction history</p>
           </div>
-        </div>
+          <div className="p-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+              {/* Expense Form */}
+              <div className="lg:col-span-1">
+                <ExpenseForm activeFilter={activeFilter} setActiveFilter={setActiveFilter} />
+              </div>
 
-        {/* Spending Overview - Moved to bottom */}
-        <div className="mb-8">
-          <ExpenseCharts />
-        </div>
+              {/* Expense List */}
+              <div className="lg:col-span-2">
+                <ExpenseList activeFilter={activeFilter} />
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Analytics Section */}
+        <section className="bg-white rounded-2xl shadow-lg border border-gray-100">
+          <div className="p-6 border-b border-gray-100">
+            <h2 className="text-2xl font-bold text-gray-800 mb-2">Spending Analytics</h2>
+            <p className="text-gray-600">Visual insights into your spending patterns and trends</p>
+          </div>
+          <div className="p-6">
+            <ExpenseCharts />
+          </div>
+        </section>
       </div>
 
       {/* Chatbot */}

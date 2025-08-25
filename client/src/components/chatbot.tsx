@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { MessageCircle, X, Send, Bot } from "lucide-react";
+import { MessageCircle, X, Send, Bot, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { api } from "@/lib/api";
@@ -104,33 +104,45 @@ export default function Chatbot() {
   return (
     <div className="fixed bottom-6 right-6 z-50" data-testid="chatbot-container">
       {/* Chatbot Toggle Button */}
-      <Button
-        onClick={() => setIsOpen(!isOpen)}
-        className="w-14 h-14 rounded-full shadow-lg hover:scale-105 transition-all"
-        data-testid="button-chat-toggle"
-      >
-        <MessageCircle className="h-6 w-6" />
-      </Button>
+      <div className="relative">
+        <Button
+          onClick={() => setIsOpen(!isOpen)}
+          className="w-16 h-16 rounded-2xl shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300 bg-gradient-to-br from-violet-600 via-purple-600 to-indigo-700 border-2 border-white"
+          data-testid="button-chat-toggle"
+        >
+          <div className="relative">
+            <Bot className="h-7 w-7" />
+            <Sparkles className="h-3 w-3 absolute -top-1 -right-1 text-yellow-300" />
+          </div>
+        </Button>
+        {!isOpen && (
+          <div className="absolute -top-12 right-0 bg-gray-900 text-white px-3 py-1 rounded-lg text-sm font-medium whitespace-nowrap shadow-lg">
+            AI Chat
+            <div className="absolute top-full right-4 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
+          </div>
+        )}
+      </div>
 
       {/* Chatbot Window */}
       {isOpen && (
-        <div className="absolute bottom-16 right-0 w-80 bg-surface rounded-2xl shadow-2xl border border-gray-200" data-testid="chat-window">
-          <div className="p-4 bg-primary rounded-t-2xl text-white">
+        <div className="absolute bottom-20 right-0 w-80 bg-white rounded-2xl shadow-2xl border border-gray-200" data-testid="chat-window">
+          <div className="p-4 bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-700 rounded-t-2xl text-white">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-3">
-                <div className="w-8 h-8 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
-                  <Bot className="h-4 w-4" />
+                <div className="w-10 h-10 bg-white bg-opacity-20 rounded-xl flex items-center justify-center backdrop-blur-sm">
+                  <Bot className="h-5 w-5" />
+                  <Sparkles className="h-3 w-3 absolute ml-1 -mt-1 text-yellow-300" />
                 </div>
                 <div>
-                  <h3 className="font-semibold">ExpenseBot</h3>
-                  <p className="text-xs opacity-90">Your smart assistant</p>
+                  <h3 className="font-bold text-lg">AI Chat</h3>
+                  <p className="text-xs opacity-90">Intelligent expense assistant</p>
                 </div>
               </div>
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => setIsOpen(false)}
-                className="text-white hover:bg-white hover:bg-opacity-20 rounded-full p-1"
+                className="text-white hover:bg-white hover:bg-opacity-20 rounded-xl p-2 transition-all"
                 data-testid="button-chat-close"
               >
                 <X className="h-4 w-4" />
