@@ -108,53 +108,45 @@ export class MemStorage implements IStorage {
     this.monthlyBudget = amount;
   }
 
-  async setTodayTotal(amount: number, userId: string): Promise<void> {
-    const userOverrides = this.userOverrides.get(userId) || {};
-    userOverrides.todayTotal = amount;
-    this.userOverrides.set(userId, userOverrides);
+  async setTodayTotal(amount: number): Promise<void> {
+    this.manualOverrides.todayTotal = amount;
   }
 
-  async setMonthTotal(amount: number, userId: string): Promise<void> {
-    const userOverrides = this.userOverrides.get(userId) || {};
-    userOverrides.monthTotal = amount;
-    this.userOverrides.set(userId, userOverrides);
+  async setMonthTotal(amount: number): Promise<void> {
+    this.manualOverrides.monthTotal = amount;
   }
 
-  async setAvgDaily(amount: number, userId: string): Promise<void> {
-    const userOverrides = this.userOverrides.get(userId) || {};
-    userOverrides.avgDaily = amount;
-    this.userOverrides.set(userId, userOverrides);
+  async setAvgDaily(amount: number): Promise<void> {
+    this.manualOverrides.avgDaily = amount;
   }
 
-  async getTodayOverride(userId: string): Promise<number | undefined> {
-    return this.userOverrides.get(userId)?.todayTotal;
+  async getTodayOverride(): Promise<number | undefined> {
+    return this.manualOverrides.todayTotal;
   }
 
-  async getMonthOverride(userId: string): Promise<number | undefined> {
-    return this.userOverrides.get(userId)?.monthTotal;
+  async getMonthOverride(): Promise<number | undefined> {
+    return this.manualOverrides.monthTotal;
   }
 
-  async getAvgDailyOverride(userId: string): Promise<number | undefined> {
-    return this.userOverrides.get(userId)?.avgDaily;
+  async getAvgDailyOverride(): Promise<number | undefined> {
+    return this.manualOverrides.avgDaily;
   }
 
-  async clearOverrides(userId: string): Promise<void> {
-    this.userOverrides.delete(userId);
+  async clearOverrides(): Promise<void> {
+    this.manualOverrides = {};
   }
 
   // Debt operations implementation
-  async getDebts(userId: string): Promise<Debt[]> {
+  async getDebts(): Promise<Debt[]> {
     return Array.from(this.debts.values())
-      .filter(debt => debt.userId === userId)
       .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
   }
 
-  async getDebt(id: string, userId: string): Promise<Debt | undefined> {
-    const debt = this.debts.get(id);
-    return debt?.userId === userId ? debt : undefined;
+  async getDebt(id: string): Promise<Debt | undefined> {
+    return this.debts.get(id);
   }
 
-  async createDebt(insertDebt: InsertDebt & { userId: string }): Promise<Debt> {
+  async createDebt(insertDebt: InsertDebt): Promise<Debt> {
     const id = randomUUID();
     const debt: Debt = {
       ...insertDebt,
@@ -167,9 +159,9 @@ export class MemStorage implements IStorage {
     return debt;
   }
 
-  async updateDebt(id: string, updateDebt: UpdateDebt, userId: string): Promise<Debt | undefined> {
+  async updateDebt(id: string, updateDebt: UpdateDebt): Promise<Debt | undefined> {
     const existing = this.debts.get(id);
-    if (!existing || existing.userId !== userId) return undefined;
+    if (!existing) return undefined;
 
     const updated: Debt = {
       ...existing,
@@ -179,15 +171,13 @@ export class MemStorage implements IStorage {
     return updated;
   }
 
-  async deleteDebt(id: string, userId: string): Promise<boolean> {
-    const debt = this.debts.get(id);
-    if (!debt || debt.userId !== userId) return false;
+  async deleteDebt(id: string): Promise<boolean> {
     return this.debts.delete(id);
   }
 
-  async settleDebt(id: string, userId: string): Promise<Debt | undefined> {
+  async settleDebt(id: string): Promise<Debt | undefined> {
     const existing = this.debts.get(id);
-    if (!existing || existing.userId !== userId) return undefined;
+    if (!existing) return undefined;
 
     const settled: Debt = {
       ...existing,
