@@ -19,10 +19,9 @@ export default function Chatbot() {
   const [messages, setMessages] = useState<Message[]>([
     {
       id: "1",
-      text: "Hi! I'm your EXPENZA assistant. I can help you track, save, and thrive with your expenses and debts. **First add your budget! Try: Set my budget to ₹2000**",
+      text: "Hi! I'm your EXPENZA assistant. I can help you track, save, and thrive with your expenses and debts. Try saying \"Add lunch expense of ₹80\"",
       isBot: true,
       timestamp: new Date(),
-      isHighlight: true,
     },
   ]);
   const [inputValue, setInputValue] = useState("");
@@ -53,13 +52,13 @@ export default function Chatbot() {
         },
         {
           id: "welcome-features",
-          text: "✨ **What I can do:**\n• Track expenses: \"I spent ₹50 on lunch\"\n• Set budgets: \"Set my budget to ₹5000\"\n• Add debts: \"John owes me ₹200\"\n• Get insights: \"How much today?\"\n• Reset data: \"Reset today's spending\"",
+          text: "✨ **What I can do:**\n• Track expenses: \"I spent ₹50 on lunch\"\n• Set **budgets**: \"Set my **budget** to ₹5000\"\n• Add debts: \"John owes me ₹200\"\n• Get insights: \"How much today?\"\n• Reset data: \"Reset today's spending\"",
           isBot: true,
           timestamp: new Date(),
         },
         {
           id: "budget-setup",
-          text: "🎯 **Let's start!** First, tell me your monthly budget or start adding expenses right away!",
+          text: "🎯 **Let's start!** First, tell me your monthly **budget** or start adding expenses right away!",
           isBot: true,
           timestamp: new Date(),
           isHighlight: true,
