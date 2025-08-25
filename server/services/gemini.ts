@@ -37,7 +37,7 @@ If intent is "add_expense", extract:
 - description (what they bought)
 - date (CRITICAL: Parse dates carefully):
   * If date is mentioned like "august 10 2025", "08/10/2025", "2025-08-10" → return "2025-08-10"
-  * If date is mentioned like "august 10", "08/10" (no year) → return "NEED_YEAR:august 10" or "NEED_YEAR:08/10"
+  * If date is mentioned like "august 10", "august 05", "08/10", "05/08" (no year) → return "NEED_YEAR:august 05" or "NEED_YEAR:08/10"
   * If "today", "yesterday" → calculate and return proper ISO date (YYYY-MM-DD)
   * If "last week", "last month" → return "NEED_CLARIFICATION:last week"
   * If no date mentioned → return "TODAY"

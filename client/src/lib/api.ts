@@ -4,6 +4,7 @@ import type { Expense, InsertExpense, UpdateExpense } from "@shared/schema";
 export interface ExpenseStats {
   todayTotal: number;
   monthTotal: number;
+  yearTotal: number;
   budgetLeft: number;
   avgDaily: number;
   monthlyBudget: number;

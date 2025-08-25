@@ -103,14 +103,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const today = new Date();
       const startOfToday = new Date(today.getFullYear(), today.getMonth(), today.getDate());
       const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+      const startOfYear = new Date(today.getFullYear(), 0, 1);
       
       // Calculate stats
       const todayExpenses = expenses.filter(e => new Date(e.date) >= startOfToday);
       const monthExpenses = expenses.filter(e => new Date(e.date) >= startOfMonth);
+      const yearExpenses = expenses.filter(e => new Date(e.date) >= startOfYear);
       
       // Calculate base values from expenses
       const calculatedTodayTotal = todayExpenses.reduce((sum, e) => sum + parseFloat(e.amount), 0);
       const calculatedMonthTotal = monthExpenses.reduce((sum, e) => sum + parseFloat(e.amount), 0);
+      const calculatedYearTotal = yearExpenses.reduce((sum, e) => sum + parseFloat(e.amount), 0);
       
       // Average daily spending for last 30 days
       const last30Days = expenses.filter(e => {
@@ -138,6 +141,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({
         todayTotal,
         monthTotal,
+        yearTotal: calculatedYearTotal,
         budgetLeft,
         avgDaily,
         monthlyBudget,

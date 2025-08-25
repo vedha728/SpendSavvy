@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { Calendar, TrendingUp, PiggyBank, Calculator } from "lucide-react";
+import { Calendar, TrendingUp, PiggyBank, Calculator, CalendarDays } from "lucide-react";
 import { api } from "@/lib/api";
 import EditableStat from "./editable-stat";
 
@@ -11,8 +11,8 @@ export default function QuickStats() {
 
   if (isLoading) {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-        {[...Array(4)].map((_, i) => (
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8">
+        {[...Array(5)].map((_, i) => (
           <div key={i} className="bg-surface rounded-xl shadow-sm p-6 border border-gray-100 animate-pulse">
             <div className="h-16 bg-gray-200 rounded"></div>
           </div>
@@ -22,7 +22,7 @@ export default function QuickStats() {
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+    <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8">
       <EditableStat
         label="Today's Spending"
         value={stats?.todayTotal || 0}
@@ -39,6 +39,15 @@ export default function QuickStats() {
         colorClass="bg-blue-50"
         onUpdate={api.stats.setMonthTotal}
         testId="month-spending"
+      />
+
+      <EditableStat
+        label="This Year"
+        value={stats?.yearTotal || 0}
+        icon={<CalendarDays className="h-6 w-6 text-purple-500" />}
+        colorClass="bg-purple-50"
+        onUpdate={async () => {}}
+        testId="year-spending"
       />
 
       <EditableStat
