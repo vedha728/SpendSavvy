@@ -37,3 +37,34 @@ export const categories = [
 ] as const;
 
 export type Category = typeof categories[number]["value"];
+
+// Debt schema
+export const debts = pgTable("debts", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  friendName: text("friend_name").notNull(),
+  amount: decimal("amount", { precision: 10, scale: 2 }).notNull(),
+  type: text("type").notNull(), // "I_OWE_THEM" or "THEY_OWE_ME"
+  description: text("description").notNull(),
+  isSettled: text("is_settled").default("false").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  settledAt: timestamp("settled_at"),
+});
+
+export const insertDebtSchema = createInsertSchema(debts).omit({
+  id: true,
+  createdAt: true,
+  settledAt: true,
+});
+
+export const updateDebtSchema = insertDebtSchema.partial();
+
+export type InsertDebt = z.infer<typeof insertDebtSchema>;
+export type UpdateDebt = z.infer<typeof updateDebtSchema>;
+export type Debt = typeof debts.$inferSelect;
+
+export const debtTypes = [
+  { value: "I_OWE_THEM", label: "I owe them" },
+  { value: "THEY_OWE_ME", label: "They owe me" },
+] as const;
+
+export type DebtType = typeof debtTypes[number]["value"];

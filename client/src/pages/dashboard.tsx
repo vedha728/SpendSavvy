@@ -4,6 +4,7 @@ import QuickStats from "@/components/quick-stats";
 import ExpenseForm from "@/components/expense-form";
 import ExpenseList from "@/components/expense-list";
 import ExpenseCharts from "@/components/expense-charts";
+import DebtTracker from "@/components/debt-tracker";
 import Chatbot from "@/components/chatbot";
 
 export default function Dashboard() {
@@ -68,6 +69,17 @@ export default function Dashboard() {
           </div>
           <div className="p-6">
             <ExpenseCharts />
+          </div>
+        </section>
+
+        {/* Debt Tracking Section */}
+        <section className="bg-white rounded-2xl shadow-lg border border-gray-100">
+          <div className="p-6 border-b border-gray-100">
+            <h2 className="text-2xl font-bold text-gray-800 mb-2">DEBTS</h2>
+            <p className="text-gray-600">Track money you owe and money owed to you</p>
+          </div>
+          <div className="p-6">
+            <DebtTracker />
           </div>
         </section>
       </div>

@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertExpenseSchema, updateExpenseSchema } from "@shared/schema";
+import { insertExpenseSchema, updateExpenseSchema, insertDebtSchema, updateDebtSchema } from "@shared/schema";
 import { processExpenseQuery, generateExpenseInsights } from "./services/gemini";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -330,6 +330,91 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error setting budget:", error);
       res.status(500).json({ message: "Failed to update budget" });
+    }
+  });
+
+  // Debt routes
+  app.get("/api/debts", async (req, res) => {
+    try {
+      const debts = await storage.getDebts();
+      res.json(debts);
+    } catch (error) {
+      console.error("Error fetching debts:", error);
+      res.status(500).json({ message: "Failed to fetch debts" });
+    }
+  });
+
+  app.get("/api/debts/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const debt = await storage.getDebt(id);
+      if (!debt) {
+        return res.status(404).json({ message: "Debt not found" });
+      }
+      res.json(debt);
+    } catch (error) {
+      console.error("Error fetching debt:", error);
+      res.status(500).json({ message: "Failed to fetch debt" });
+    }
+  });
+
+  app.post("/api/debts", async (req, res) => {
+    try {
+      const validatedData = insertDebtSchema.parse(req.body);
+      const debt = await storage.createDebt(validatedData);
+      res.status(201).json(debt);
+    } catch (error) {
+      console.error("Error creating debt:", error);
+      if (error instanceof Error && error.name === "ZodError") {
+        return res.status(400).json({ message: "Invalid debt data", errors: error.message });
+      }
+      res.status(500).json({ message: "Failed to create debt" });
+    }
+  });
+
+  app.put("/api/debts/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const validatedData = updateDebtSchema.parse(req.body);
+      const debt = await storage.updateDebt(id, validatedData);
+      if (!debt) {
+        return res.status(404).json({ message: "Debt not found" });
+      }
+      res.json(debt);
+    } catch (error) {
+      console.error("Error updating debt:", error);
+      if (error instanceof Error && error.name === "ZodError") {
+        return res.status(400).json({ message: "Invalid debt data", errors: error.message });
+      }
+      res.status(500).json({ message: "Failed to update debt" });
+    }
+  });
+
+  app.post("/api/debts/:id/settle", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const debt = await storage.settleDebt(id);
+      if (!debt) {
+        return res.status(404).json({ message: "Debt not found" });
+      }
+      res.json(debt);
+    } catch (error) {
+      console.error("Error settling debt:", error);
+      res.status(500).json({ message: "Failed to settle debt" });
+    }
+  });
+
+  app.delete("/api/debts/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const deleted = await storage.deleteDebt(id);
+      if (!deleted) {
+        return res.status(404).json({ message: "Debt not found" });
+      }
+      res.json({ message: "Debt deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting debt:", error);
+      res.status(500).json({ message: "Failed to delete debt" });
     }
   });
 

@@ -1,5 +1,5 @@
 import { apiRequest } from "./queryClient";
-import type { Expense, InsertExpense, UpdateExpense } from "@shared/schema";
+import type { Expense, InsertExpense, UpdateExpense, Debt, InsertDebt, UpdateDebt } from "@shared/schema";
 
 export interface ExpenseStats {
   todayTotal: number;
@@ -64,6 +64,37 @@ export const api = {
   chat: {
     sendMessage: async (message: string): Promise<ChatResponse> => {
       const response = await apiRequest("POST", "/api/chat", { message });
+      return response.json();
+    },
+  },
+  
+  debts: {
+    getAll: async (): Promise<Debt[]> => {
+      const response = await apiRequest("GET", "/api/debts");
+      return response.json();
+    },
+    
+    getById: async (id: string): Promise<Debt> => {
+      const response = await apiRequest("GET", `/api/debts/${id}`);
+      return response.json();
+    },
+    
+    create: async (debt: InsertDebt): Promise<Debt> => {
+      const response = await apiRequest("POST", "/api/debts", debt);
+      return response.json();
+    },
+    
+    update: async (id: string, debt: UpdateDebt): Promise<Debt> => {
+      const response = await apiRequest("PUT", `/api/debts/${id}`, debt);
+      return response.json();
+    },
+    
+    delete: async (id: string): Promise<void> => {
+      await apiRequest("DELETE", `/api/debts/${id}`);
+    },
+    
+    settle: async (id: string): Promise<Debt> => {
+      const response = await apiRequest("POST", `/api/debts/${id}/settle`);
       return response.json();
     },
   },

@@ -1,4 +1,4 @@
-import { type Expense, type InsertExpense, type UpdateExpense } from "@shared/schema";
+import { type Expense, type InsertExpense, type UpdateExpense, type Debt, type InsertDebt, type UpdateDebt } from "@shared/schema";
 import { randomUUID } from "crypto";
 
 export interface IStorage {
@@ -15,6 +15,14 @@ export interface IStorage {
   getBudget(): Promise<number>;
   setBudget(amount: number): Promise<void>;
   
+  // Debt operations
+  getDebts(): Promise<Debt[]>;
+  getDebt(id: string): Promise<Debt | undefined>;
+  createDebt(debt: InsertDebt): Promise<Debt>;
+  updateDebt(id: string, debt: UpdateDebt): Promise<Debt | undefined>;
+  deleteDebt(id: string): Promise<boolean>;
+  settleDebt(id: string): Promise<Debt | undefined>;
+  
   // Manual overrides for stats
   setTodayTotal(amount: number): Promise<void>;
   setMonthTotal(amount: number): Promise<void>;
@@ -27,6 +35,7 @@ export interface IStorage {
 
 export class MemStorage implements IStorage {
   private expenses: Map<string, Expense>;
+  private debts: Map<string, Debt>;
   private monthlyBudget: number;
   private manualOverrides: {
     todayTotal?: number;
@@ -36,6 +45,7 @@ export class MemStorage implements IStorage {
 
   constructor() {
     this.expenses = new Map();
+    this.debts = new Map();
     this.monthlyBudget = 0; // Default budget - user needs to set their budget first
     this.manualOverrides = {};
   }
@@ -124,6 +134,58 @@ export class MemStorage implements IStorage {
 
   async clearOverrides(): Promise<void> {
     this.manualOverrides = {};
+  }
+
+  // Debt operations implementation
+  async getDebts(): Promise<Debt[]> {
+    return Array.from(this.debts.values()).sort(
+      (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    );
+  }
+
+  async getDebt(id: string): Promise<Debt | undefined> {
+    return this.debts.get(id);
+  }
+
+  async createDebt(insertDebt: InsertDebt): Promise<Debt> {
+    const id = randomUUID();
+    const debt: Debt = {
+      ...insertDebt,
+      id,
+      createdAt: new Date(),
+      settledAt: null,
+    };
+    this.debts.set(id, debt);
+    return debt;
+  }
+
+  async updateDebt(id: string, updateDebt: UpdateDebt): Promise<Debt | undefined> {
+    const existing = this.debts.get(id);
+    if (!existing) return undefined;
+
+    const updated: Debt = {
+      ...existing,
+      ...updateDebt,
+    };
+    this.debts.set(id, updated);
+    return updated;
+  }
+
+  async deleteDebt(id: string): Promise<boolean> {
+    return this.debts.delete(id);
+  }
+
+  async settleDebt(id: string): Promise<Debt | undefined> {
+    const existing = this.debts.get(id);
+    if (!existing) return undefined;
+
+    const settled: Debt = {
+      ...existing,
+      isSettled: "true",
+      settledAt: new Date(),
+    };
+    this.debts.set(id, settled);
+    return settled;
   }
 }
 
