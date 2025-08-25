@@ -201,28 +201,36 @@ export default function Chatbot() {
       {isOpen && (
         <div 
           ref={chatWindowRef}
-          className="fixed w-80 bg-white rounded-2xl shadow-2xl border border-gray-200 z-50 select-none" 
+          className="fixed w-96 bg-white/95 backdrop-blur-sm rounded-3xl shadow-2xl border border-white/20 z-50 select-none animate-scale-up" 
           style={{
             left: position.x || 'auto',
             top: position.y || 'auto',
-            right: position.x ? 'auto' : '1.5rem',
-            bottom: position.y ? 'auto' : '5rem',
+            right: position.x ? 'auto' : '2rem',
+            bottom: position.y ? 'auto' : '6rem',
           }}
           data-testid="chat-window"
         >
           <div 
-            className="p-4 bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-700 rounded-t-2xl text-white cursor-move"
+            className="p-6 bg-gradient-primary rounded-t-2xl text-white cursor-move relative overflow-hidden"
             onMouseDown={handleMouseDown}
           >
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 bg-white bg-opacity-20 rounded-xl flex items-center justify-center backdrop-blur-sm">
-                  <Bot className="h-5 w-5" />
-                  <Sparkles className="h-3 w-3 absolute ml-1 -mt-1 text-yellow-300" />
+            {/* Background pattern */}
+            <div className="absolute inset-0 opacity-10">
+              <div className="absolute inset-0" style={{
+                backgroundImage: `radial-gradient(circle at 20% 50%, white 1px, transparent 1px), radial-gradient(circle at 80% 50%, white 1px, transparent 1px)`,
+                backgroundSize: '60px 60px'
+              }}></div>
+            </div>
+            
+            <div className="relative flex items-center justify-between">
+              <div className="flex items-center space-x-4">
+                <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center border border-white/30 shadow-lg">
+                  <Bot className="h-6 w-6" />
+                  <Sparkles className="h-4 w-4 absolute ml-1 -mt-1 text-yellow-300" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-lg">Chatbot</h3>
-                  <p className="text-xs opacity-90">EXPENZA Assistant</p>
+                  <h3 className="font-display font-bold text-xl">AI Assistant</h3>
+                  <p className="text-sm text-white/80 font-medium">EXPENZA Chatbot</p>
                 </div>
               </div>
               <Button
@@ -238,35 +246,35 @@ export default function Chatbot() {
             </div>
           </div>
 
-          <div className="h-64 overflow-y-auto p-4 space-y-3" data-testid="chat-messages">
+          <div className="h-80 overflow-y-auto p-6 space-y-4 bg-gradient-to-b from-gray-50/50 to-white" data-testid="chat-messages">
             {messages.map((message) => (
-              <div key={message.id} className={`flex ${message.isBot ? 'items-start' : 'items-end justify-end'} space-x-2`}>
+              <div key={message.id} className={`flex ${message.isBot ? 'items-start' : 'items-end justify-end'} space-x-3`}>
                 {message.isBot && (
-                  <div className="w-6 h-6 bg-primary rounded-full flex items-center justify-center flex-shrink-0">
-                    <Bot className="h-3 w-3 text-white" />
+                  <div className="w-8 h-8 bg-gradient-primary rounded-2xl flex items-center justify-center flex-shrink-0 shadow-lg">
+                    <Bot className="h-4 w-4 text-white" />
                   </div>
                 )}
-                <div className={`max-w-xs rounded-lg px-3 py-2 ${
+                <div className={`max-w-sm rounded-2xl px-4 py-3 shadow-card ${
                   message.isBot 
                     ? message.isHighlight 
-                      ? 'bg-yellow-100 border-2 border-yellow-300 text-text-primary font-semibold' 
-                      : 'bg-gray-100 text-text-primary'
-                    : 'bg-primary text-white'
+                      ? 'bg-gradient-to-br from-amber-50 to-amber-100 border-2 border-amber-300 text-amber-900 font-semibold' 
+                      : 'bg-gradient-to-br from-gray-50 to-gray-100 text-gray-800 border border-gray-200'
+                    : 'bg-gradient-primary text-white shadow-lg'
                 }`}>
-                  <p className="text-sm">{message.text}</p>
+                  <p className="text-sm leading-relaxed">{message.text}</p>
                 </div>
               </div>
             ))}
             {chatMutation.isPending && (
-              <div className="flex items-start space-x-2">
-                <div className="w-6 h-6 bg-primary rounded-full flex items-center justify-center flex-shrink-0">
-                  <Bot className="h-3 w-3 text-white" />
+              <div className="flex items-start space-x-3">
+                <div className="w-8 h-8 bg-gradient-primary rounded-2xl flex items-center justify-center flex-shrink-0 shadow-lg">
+                  <Bot className="h-4 w-4 text-white" />
                 </div>
-                <div className="bg-gray-100 rounded-lg px-3 py-2">
-                  <div className="flex space-x-1">
-                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
-                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl px-4 py-3 border border-gray-200 shadow-card">
+                  <div className="flex space-x-2">
+                    <div className="w-2 h-2 bg-indigo-400 rounded-full animate-bounce"></div>
+                    <div className="w-2 h-2 bg-indigo-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                    <div className="w-2 h-2 bg-indigo-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
                   </div>
                 </div>
               </div>

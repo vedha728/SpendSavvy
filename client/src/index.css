@@ -1,4 +1,5 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -38,25 +39,30 @@
   --sidebar-border: hsl(205 25% 91%);
   --sidebar-ring: hsl(203 89% 53%);
   --font-sans: 'Inter', system-ui, sans-serif;
+  --font-display: 'Poppins', 'Inter', system-ui, sans-serif;
   --font-serif: Georgia, serif;
   --font-mono: Menlo, monospace;
-  --radius: 1.3rem;
-  --shadow-2xs: 0px 2px 0px 0px hsl(203 89% 53% / 0.00);
-  --shadow-xs: 0px 2px 0px 0px hsl(203 89% 53% / 0.00);
-  --shadow-sm: 0px 2px 0px 0px hsl(203 89% 53% / 0.00), 0px 1px 2px -1px hsl(203 89% 53% / 0.00);
-  --shadow: 0px 2px 0px 0px hsl(203 89% 53% / 0.00), 0px 1px 2px -1px hsl(203 89% 53% / 0.00);
-  --shadow-md: 0px 2px 0px 0px hsl(203 89% 53% / 0.00), 0px 2px 4px -1px hsl(203 89% 53% / 0.00);
-  --shadow-lg: 0px 2px 0px 0px hsl(203 89% 53% / 0.00), 0px 4px 6px -1px hsl(203 89% 53% / 0.00);
-  --shadow-xl: 0px 2px 0px 0px hsl(203 89% 53% / 0.00), 0px 8px 10px -1px hsl(203 89% 53% / 0.00);
-  --shadow-2xl: 0px 2px 0px 0px hsl(203 89% 53% / 0.00);
+  --radius: 1rem;
+  --shadow-2xs: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+  --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+  --shadow-2xl: 0 25px 50px -12px rgb(0 0 0 / 0.25);
   --tracking-normal: 0em;
   --spacing: 0.25rem;
   
-  /* Custom colors from design */
+  /* Professional gradient colors */
   --surface: hsl(0 0% 100%);
-  --background: hsl(248 100% 99%);
+  --background: linear-gradient(135deg, hsl(250 100% 98%) 0%, hsl(240 100% 99%) 100%);
   --text-primary: hsl(223 47% 11%);
   --text-secondary: hsl(212 13% 42%);
+  --gradient-primary: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #d946ef 100%);
+  --gradient-secondary: linear-gradient(135deg, #06b6d4 0%, #3b82f6 50%, #6366f1 100%);
+  --glass-bg: rgba(255, 255, 255, 0.8);
+  --glass-border: rgba(255, 255, 255, 0.2);
 }
 
 .dark {
@@ -93,17 +99,18 @@
   --sidebar-border: hsl(206 16% 26%);
   --sidebar-ring: hsl(203 89% 53%);
   --font-sans: 'Inter', system-ui, sans-serif;
+  --font-display: 'Poppins', 'Inter', system-ui, sans-serif;
   --font-serif: Georgia, serif;
   --font-mono: Menlo, monospace;
-  --radius: 1.3rem;
-  --shadow-2xs: 0px 2px 0px 0px hsl(203 89% 53% / 0.00);
-  --shadow-xs: 0px 2px 0px 0px hsl(203 89% 53% / 0.00);
-  --shadow-sm: 0px 2px 0px 0px hsl(203 89% 53% / 0.00), 0px 1px 2px -1px hsl(203 89% 53% / 0.00);
-  --shadow: 0px 2px 0px 0px hsl(203 89% 53% / 0.00), 0px 1px 2px -1px hsl(203 89% 53% / 0.00);
-  --shadow-md: 0px 2px 0px 0px hsl(203 89% 53% / 0.00), 0px 2px 4px -1px hsl(203 89% 53% / 0.00);
-  --shadow-lg: 0px 2px 0px 0px hsl(203 89% 53% / 0.00), 0px 4px 6px -1px hsl(203 89% 53% / 0.00);
-  --shadow-xl: 0px 2px 0px 0px hsl(203 89% 53% / 0.00), 0px 8px 10px -1px hsl(203 89% 53% / 0.00);
-  --shadow-2xl: 0px 2px 0px 0px hsl(203 89% 53% / 0.00);
+  --radius: 1rem;
+  --shadow-2xs: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+  --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+  --shadow-2xl: 0 25px 50px -12px rgb(0 0 0 / 0.25);
   
   /* Custom dark mode colors */
   --surface: hsl(228 10% 10%);
@@ -145,5 +152,76 @@
   
   .text-text-secondary {
     color: var(--text-secondary);
+  }
+  
+  /* Professional gradients */
+  .bg-gradient-primary {
+    background: var(--gradient-primary);
+  }
+  
+  .bg-gradient-secondary {
+    background: var(--gradient-secondary);
+  }
+  
+  /* Glassmorphism effects */
+  .glass {
+    background: var(--glass-bg);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--glass-border);
+  }
+  
+  /* Enhanced shadows */
+  .shadow-elegant {
+    box-shadow: 0 8px 32px rgba(99, 102, 241, 0.1), 0 1px 3px rgba(0, 0, 0, 0.1);
+  }
+  
+  .shadow-card {
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Professional animations */
+  .animate-fade-up {
+    animation: fadeUp 0.6s ease-out;
+  }
+  
+  .animate-scale-up {
+    animation: scaleUp 0.3s ease-out;
+  }
+  
+  /* Hover effects */
+  .hover-lift {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .hover-lift:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 40px rgba(99, 102, 241, 0.15), 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Custom typography */
+  .font-display {
+    font-family: var(--font-display);
+  }
+}
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes scaleUp {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
   }
 }
