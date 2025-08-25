@@ -27,6 +27,12 @@ export default function Chatbot() {
   const [inputValue, setInputValue] = useState("");
   const [budgetMessageAdded, setBudgetMessageAdded] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  
+  // Draggable functionality
+  const [position, setPosition] = useState({ x: 0, y: 0 });
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  const chatWindowRef = useRef<HTMLDivElement>(null);
 
   const { data: stats } = useQuery({
     queryKey: ["/api/expenses/analytics/stats"],
@@ -111,6 +117,48 @@ export default function Chatbot() {
     setTimeout(() => sendMessage(), 100);
   };
 
+  // Drag handlers
+  const handleMouseDown = (e: React.MouseEvent) => {
+    setIsDragging(true);
+    setDragStart({
+      x: e.clientX - position.x,
+      y: e.clientY - position.y,
+    });
+  };
+
+  const handleMouseMove = (e: MouseEvent) => {
+    if (!isDragging) return;
+    
+    const newX = e.clientX - dragStart.x;
+    const newY = e.clientY - dragStart.y;
+    
+    // Constrain within viewport
+    const windowWidth = window.innerWidth;
+    const windowHeight = window.innerHeight;
+    const chatWidth = 320; // w-80 = 320px
+    const chatHeight = 500; // approximate height
+    
+    const constrainedX = Math.max(0, Math.min(newX, windowWidth - chatWidth));
+    const constrainedY = Math.max(0, Math.min(newY, windowHeight - chatHeight));
+    
+    setPosition({ x: constrainedX, y: constrainedY });
+  };
+
+  const handleMouseUp = () => {
+    setIsDragging(false);
+  };
+
+  useEffect(() => {
+    if (isDragging) {
+      document.addEventListener('mousemove', handleMouseMove);
+      document.addEventListener('mouseup', handleMouseUp);
+      return () => {
+        document.removeEventListener('mousemove', handleMouseMove);
+        document.removeEventListener('mouseup', handleMouseUp);
+      };
+    }
+  }, [isDragging, dragStart, position]);
+
   return (
     <div className="fixed bottom-6 right-6 z-50" data-testid="chatbot-container">
       {/* Chatbot Toggle Button */}
@@ -135,8 +183,21 @@ export default function Chatbot() {
 
       {/* Chatbot Window */}
       {isOpen && (
-        <div className="absolute bottom-20 right-0 w-80 bg-white rounded-2xl shadow-2xl border border-gray-200" data-testid="chat-window">
-          <div className="p-4 bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-700 rounded-t-2xl text-white">
+        <div 
+          ref={chatWindowRef}
+          className="fixed w-80 bg-white rounded-2xl shadow-2xl border border-gray-200 z-50 select-none" 
+          style={{
+            left: position.x || 'auto',
+            top: position.y || 'auto',
+            right: position.x ? 'auto' : '1.5rem',
+            bottom: position.y ? 'auto' : '5rem',
+          }}
+          data-testid="chat-window"
+        >
+          <div 
+            className="p-4 bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-700 rounded-t-2xl text-white cursor-move"
+            onMouseDown={handleMouseDown}
+          >
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-3">
                 <div className="w-10 h-10 bg-white bg-opacity-20 rounded-xl flex items-center justify-center backdrop-blur-sm">
@@ -152,8 +213,9 @@ export default function Chatbot() {
                 variant="ghost"
                 size="sm"
                 onClick={() => setIsOpen(false)}
-                className="text-white hover:bg-white hover:bg-opacity-20 rounded-xl p-2 transition-all"
+                className="text-white hover:bg-white hover:bg-opacity-20 rounded-xl p-2 transition-all cursor-pointer"
                 data-testid="button-chat-close"
+                onMouseDown={(e) => e.stopPropagation()}
               >
                 <X className="h-4 w-4" />
               </Button>
