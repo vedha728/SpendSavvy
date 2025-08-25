@@ -325,6 +325,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
 
+      // If it's a set budget left intent, calculate total budget needed
+      if (result.intent === "set_budget_left" && result.budget_amount !== undefined) {
+        try {
+          // Get current month's spending
+          const currentDate = new Date();
+          const expenses = await storage.getExpenses();
+          const monthTotal = expenses
+            .filter(expense => {
+              const expenseDate = new Date(expense.date);
+              return expenseDate.getMonth() === currentDate.getMonth() && 
+                     expenseDate.getFullYear() === currentDate.getFullYear();
+            })
+            .reduce((sum, expense) => sum + parseFloat(expense.amount), 0);
+
+          // Calculate total budget needed: current spending + desired budget left
+          const totalBudgetNeeded = monthTotal + result.budget_amount;
+          
+          await storage.setBudget(totalBudgetNeeded);
+          if (result.budget_amount === 0) {
+            result.response_text = `✅ Perfect! I've adjusted your budget to ₹${totalBudgetNeeded} so you have exactly ₹0 left to spend this month.`;
+          } else {
+            result.response_text = `💰 Great! I've set your budget to ₹${totalBudgetNeeded} so you have ₹${result.budget_amount} left to spend this month!`;
+          }
+        } catch (error) {
+          result.response_text = "I understood you want to set your budget left amount, but couldn't save it. Please try again.";
+        }
+      }
+
       // If it's a reset today intent, clear today's spending
       if (result.intent === "reset_today") {
         try {

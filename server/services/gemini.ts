@@ -9,7 +9,7 @@ import { GoogleGenAI } from "@google/genai";
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || "" });
 
 export interface ExpenseIntentResult {
-  intent: "add_expense" | "add_debt" | "query_expenses" | "query_debts" | "set_budget" | "reset_today" | "general_help" | "unclear";
+  intent: "add_expense" | "add_debt" | "query_expenses" | "query_debts" | "set_budget" | "set_budget_left" | "reset_today" | "general_help" | "unclear";
   amount?: number;
   category?: string;
   description?: string;
@@ -39,7 +39,20 @@ export async function processExpenseQuery(userMessage: string): Promise<ExpenseI
     
     // Pattern matching for budget setting commands
     if (message.includes('budget')) {
-      // Check for budget removal first (setting to 0)
+      // Special handling for "budget left" - this means setting remaining budget after spending
+      if (message.includes('budget left')) {
+        const budgetLeftMatch = userMessage.match(/₹?(\d+)/);
+        if (budgetLeftMatch) {
+          const desiredBudgetLeft = parseInt(budgetLeftMatch[1]);
+          return {
+            intent: "set_budget_left",
+            budget_amount: desiredBudgetLeft,
+            response_text: `💰 I'll adjust your budget so you have ₹${desiredBudgetLeft} left to spend this month!`
+          };
+        }
+      }
+      
+      // Check for budget removal (setting total budget to 0)
       if (message.includes('remove budget') || message.includes('no budget') || 
           (message.includes(' 0') || message.includes('to 0') || message.includes('= 0'))) {
         return {
@@ -49,8 +62,7 @@ export async function processExpenseQuery(userMessage: string): Promise<ExpenseI
         };
       }
       
-      // More comprehensive pattern for budget setting
-      // This will match various formats like "set budget to 5000", "my budget to ₹5000", "budget 5000", etc.
+      // Pattern for setting total budget amount
       const budgetAmountMatch = userMessage.match(/₹?(\d+)/);
       
       if (budgetAmountMatch) {
@@ -206,7 +218,7 @@ Respond with JSON in this exact format (all fields required):
         responseSchema: {
           type: "object",
           properties: {
-            intent: { type: "string", enum: ["add_expense", "add_debt", "query_expenses", "query_debts", "set_budget", "reset_today", "general_help", "unclear"] },
+            intent: { type: "string", enum: ["add_expense", "add_debt", "query_expenses", "query_debts", "set_budget", "set_budget_left", "reset_today", "general_help", "unclear"] },
             amount: { type: ["number", "null"] },
             category: { type: ["string", "null"] },
             description: { type: ["string", "null"] },
