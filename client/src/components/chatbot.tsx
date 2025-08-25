@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useMutation } from "@tanstack/react-query";
+import { useState, useEffect } from "react";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { MessageCircle, X, Send, Bot } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,6 +11,7 @@ interface Message {
   text: string;
   isBot: boolean;
   timestamp: Date;
+  isHighlight?: boolean;
 }
 
 export default function Chatbot() {
@@ -24,6 +25,27 @@ export default function Chatbot() {
     },
   ]);
   const [inputValue, setInputValue] = useState("");
+  const [budgetMessageAdded, setBudgetMessageAdded] = useState(false);
+
+  const { data: stats } = useQuery({
+    queryKey: ["/api/expenses/analytics/stats"],
+    queryFn: () => api.expenses.getStats(),
+  });
+
+  // Add budget setup message when chat opens if budget is 0
+  useEffect(() => {
+    if (isOpen && stats && stats.monthlyBudget === 0 && !budgetMessageAdded) {
+      const budgetMessage: Message = {
+        id: "budget-setup",
+        text: "🎯 **First set your budget!** Try: \"Set my budget to ₹5000\"",
+        isBot: true,
+        timestamp: new Date(),
+        isHighlight: true,
+      };
+      setMessages(prev => [...prev, budgetMessage]);
+      setBudgetMessageAdded(true);
+    }
+  }, [isOpen, stats, budgetMessageAdded]);
 
   const chatMutation = useMutation({
     mutationFn: api.chat.sendMessage,
@@ -126,7 +148,9 @@ export default function Chatbot() {
                 )}
                 <div className={`max-w-xs rounded-lg px-3 py-2 ${
                   message.isBot 
-                    ? 'bg-gray-100 text-text-primary' 
+                    ? message.isHighlight 
+                      ? 'bg-yellow-100 border-2 border-yellow-300 text-text-primary font-semibold' 
+                      : 'bg-gray-100 text-text-primary'
                     : 'bg-primary text-white'
                 }`}>
                   <p className="text-sm">{message.text}</p>
