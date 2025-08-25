@@ -39,41 +39,48 @@ export async function processExpenseQuery(userMessage: string): Promise<ExpenseI
     
     // Pattern matching for budget setting commands
     if (message.includes('budget')) {
-      // Special handling for "budget left" - this means setting remaining budget after spending
-      if (message.includes('budget left')) {
-        const budgetLeftMatch = userMessage.match(/₹?(\d+)/);
-        if (budgetLeftMatch) {
-          const desiredBudgetLeft = parseInt(budgetLeftMatch[1]);
-          return {
-            intent: "set_budget_left",
-            budget_amount: desiredBudgetLeft,
-            response_text: `💰 I'll adjust your budget so you have ₹${desiredBudgetLeft} left to spend this month!`
-          };
-        }
-      }
-      
-      // Check for budget removal (setting total budget to 0)
-      if (message.includes('remove budget') || message.includes('no budget') || 
-          (message.includes(' 0') || message.includes('to 0') || message.includes('= 0'))) {
-        return {
-          intent: "set_budget",
-          budget_amount: 0,
-          response_text: "✅ I'll remove your budget limit!"
-        };
-      }
-      
-      // Pattern for setting total budget amount
+      // Extract the number from the message
       const budgetAmountMatch = userMessage.match(/₹?(\d+)/);
       
       if (budgetAmountMatch) {
-        const budgetAmount = parseInt(budgetAmountMatch[1]);
-        if (budgetAmount > 0) { // Only process positive amounts
+        const amount = parseInt(budgetAmountMatch[1]);
+        
+        // Check for explicit budget removal phrases
+        if (message.includes('remove budget') || message.includes('no budget')) {
           return {
             intent: "set_budget",
-            budget_amount: budgetAmount,
-            response_text: `💰 Perfect! I've set your monthly budget to ₹${budgetAmount}. I'll help you track your spending and stay within your budget! 🎯`
+            budget_amount: 0,
+            response_text: "✅ I'll remove your budget limit!"
           };
         }
+        
+        // Check if they specifically mention "budget left", "left", or common phrases that indicate they want to set remaining budget
+        if (message.includes('budget left') || message.includes('left to') || 
+            message.includes('set to') || message.includes('change to') || 
+            message.includes('make it') || message.includes('budget remaining')) {
+          return {
+            intent: "set_budget_left",
+            budget_amount: amount,
+            response_text: `💰 I'll adjust your budget so you have ₹${amount} left to spend this month!`
+          };
+        }
+        
+        // If they say "set my budget to X" or "budget X" (clear total budget setting)
+        if (message.includes('set my budget to') || message.includes('my budget to') || 
+            message.includes('budget is') || message.includes('total budget')) {
+          return {
+            intent: "set_budget",
+            budget_amount: amount,
+            response_text: `💰 Perfect! I've set your monthly budget to ₹${amount}. I'll help you track your spending and stay within your budget! 🎯`
+          };
+        }
+        
+        // Default behavior: if context is unclear, assume they want to set budget left (more common user intent)
+        return {
+          intent: "set_budget_left",
+          budget_amount: amount,
+          response_text: `💰 I'll adjust your budget so you have ₹${amount} left to spend this month!`
+        };
       }
     }
     
