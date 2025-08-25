@@ -153,6 +153,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Get dynamic budget from storage
       const monthlyBudget = await storage.getBudget();
+      
+      // If no budget is set, return all values as 0 for clean initial state
+      if (monthlyBudget === 0) {
+        res.json({
+          todayTotal: 0,
+          monthTotal: 0,
+          yearTotal: 0,
+          budgetLeft: 0,
+          avgDaily: 0,
+          monthlyBudget: 0,
+        });
+        return;
+      }
+      
+      // Normal calculations when budget is set
       const budgetLeft = monthlyBudget - monthTotal;
       
       res.json({
