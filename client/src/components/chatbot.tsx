@@ -19,9 +19,10 @@ export default function Chatbot() {
   const [messages, setMessages] = useState<Message[]>([
     {
       id: "1",
-      text: "Hi! I'm your EXPENZA assistant. I can help you track, save, and thrive with your expenses and debts. Try saying \"Add lunch expense of ₹80\"",
+      text: "Hi! I'm your EXPENZA assistant. I can help you track, save, and thrive with your expenses and debts. **First add your budget! Try: Set my budget to ₹2000**",
       isBot: true,
       timestamp: new Date(),
+      isHighlight: true,
     },
   ]);
   const [inputValue, setInputValue] = useState("");
