@@ -9,14 +9,18 @@ import { GoogleGenAI } from "@google/genai";
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || "" });
 
 export interface ExpenseIntentResult {
-  intent: "add_expense" | "query_expenses" | "set_budget" | "general_help" | "unclear";
+  intent: "add_expense" | "add_debt" | "query_expenses" | "query_debts" | "set_budget" | "general_help" | "unclear";
   amount?: number;
   category?: string;
   description?: string;
   date?: string;
-  query_type?: "total" | "today" | "month" | "category" | "recent";
+  query_type?: "total" | "today" | "month" | "category" | "recent" | "total_owed" | "total_owing" | "net_balance" | "list";
   category_filter?: string;
   budget_amount?: number;
+  friend_name?: string;
+  debt_amount?: number;
+  debt_type?: string;
+  debt_description?: string;
   response_text: string;
 }
 
@@ -26,10 +30,12 @@ export async function processExpenseQuery(userMessage: string): Promise<ExpenseI
 
 Possible intents:
 1. "add_expense" - User wants to add a new expense
-2. "query_expenses" - User wants to know about their spending
-3. "set_budget" - User wants to set their monthly budget
-4. "general_help" - User needs help using the app
-5. "unclear" - Message is unclear
+2. "add_debt" - User wants to add a debt record
+3. "query_expenses" - User wants to know about their spending
+4. "query_debts" - User wants to know about their debts
+5. "set_budget" - User wants to set their monthly budget
+6. "general_help" - User needs help using the app
+7. "unclear" - Message is unclear
 
 If intent is "add_expense", extract:
 - amount (number)
@@ -43,8 +49,22 @@ If intent is "add_expense", extract:
   * If no date mentioned → return "TODAY"
   * IMPORTANT: If user says "july 10 2024" this means July 10, 2024 NOT today's date
 
+If intent is "add_debt", extract:
+- friend_name (string) - name of the friend
+- debt_amount (number) - amount of money
+- debt_type ("I_OWE_THEM" or "THEY_OWE_ME") - determine from context:
+  * If user says "I owe", "I borrowed", "I need to pay" → "I_OWE_THEM"
+  * If user says "they owe me", "lent to", "gave to", "paid for them" → "THEY_OWE_ME"
+- debt_description (string) - what the debt is for
+
 If intent is "set_budget", extract:
 - budget_amount (number) - the budget amount the user wants to set (can be 0 to remove budget)
+
+If intent is "query_debts", determine query_type:
+- "total_owed" - how much they owe others
+- "total_owing" - how much others owe them
+- "net_balance" - net debt balance
+- "list" - list of debts
 
 IMPORTANT: If user asks to "reset today's spending", "make today's spending 0", "clear today", respond with intent "unclear" and explain this is not allowed for accuracy.
 
@@ -58,7 +78,7 @@ If intent is "query_expenses", determine query_type:
 Provide a helpful response_text for the user.
 
 Respond with JSON in this format:
-{'intent': string, 'amount': number, 'category': string, 'description': string, 'date': string, 'query_type': string, 'category_filter': string, 'budget_amount': number, 'response_text': string}`;
+{'intent': string, 'amount': number, 'category': string, 'description': string, 'date': string, 'query_type': string, 'category_filter': string, 'budget_amount': number, 'friend_name': string, 'debt_amount': number, 'debt_type': string, 'debt_description': string, 'response_text': string}`;
 
     const response = await ai.models.generateContent({
       model: "gemini-2.5-flash",
@@ -76,6 +96,10 @@ Respond with JSON in this format:
             query_type: { type: "string" },
             category_filter: { type: "string" },
             budget_amount: { type: "number" },
+            friend_name: { type: "string" },
+            debt_amount: { type: "number" },
+            debt_type: { type: "string" },
+            debt_description: { type: "string" },
             response_text: { type: "string" },
           },
           required: ["intent", "response_text"],

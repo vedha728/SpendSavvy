@@ -255,12 +255,69 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // If it's a set budget intent, update the budget
-      if (result.intent === "set_budget" && result.budget_amount) {
+      if (result.intent === "set_budget" && result.budget_amount !== undefined) {
         try {
           await storage.setBudget(result.budget_amount);
           result.response_text = `Perfect! I've set your monthly budget to ₹${result.budget_amount}. You can now track how much you have left to spend each month.`;
         } catch (error) {
           result.response_text = "I understood you want to set a budget, but couldn't save it. Please try again.";
+        }
+      }
+
+      // If it's an add debt intent, create the debt record
+      if (result.intent === "add_debt" && result.friend_name && result.debt_amount && result.debt_type && result.debt_description) {
+        try {
+          await storage.createDebt({
+            friendName: result.friend_name,
+            amount: result.debt_amount.toString(),
+            type: result.debt_type,
+            description: result.debt_description,
+            isSettled: "false"
+          });
+          const typeText = result.debt_type === "I_OWE_THEM" ? "you owe" : "they owe you";
+          result.response_text = `Got it! I've recorded that ${typeText} ₹${result.debt_amount} for ${result.debt_description}. Friend: ${result.friend_name}`;
+        } catch (error) {
+          result.response_text = "I understood your debt request, but couldn't save it. Please try again.";
+        }
+      }
+
+      // If it's a query debts intent, get debt information
+      if (result.intent === "query_debts") {
+        const debts = await storage.getDebts();
+        const activeDebts = debts.filter(debt => debt.isSettled === "false");
+        
+        if (result.query_type === "list") {
+          if (activeDebts.length === 0) {
+            result.response_text = "You have no active debts! 🎉";
+          } else {
+            const debtList = activeDebts.map(debt => {
+              const typeText = debt.type === "I_OWE_THEM" ? "You owe" : "They owe you";
+              return `• ${typeText} ${debt.friendName} ₹${debt.amount} for ${debt.description}`;
+            }).join('\n');
+            result.response_text = `Here are your active debts:\n\n${debtList}`;
+          }
+        } else {
+          const youOwe = activeDebts
+            .filter(debt => debt.type === "I_OWE_THEM")
+            .reduce((sum, debt) => sum + parseFloat(debt.amount), 0);
+          const owedToYou = activeDebts
+            .filter(debt => debt.type === "THEY_OWE_ME")
+            .reduce((sum, debt) => sum + parseFloat(debt.amount), 0);
+          const netBalance = owedToYou - youOwe;
+
+          if (result.query_type === "total_owed") {
+            result.response_text = `You owe a total of ₹${youOwe} to others.`;
+          } else if (result.query_type === "total_owing") {
+            result.response_text = `Others owe you a total of ₹${owedToYou}.`;
+          } else if (result.query_type === "net_balance") {
+            if (netBalance > 0) {
+              result.response_text = `Your net balance is +₹${netBalance} (more money owed to you).`;
+            } else if (netBalance < 0) {
+              result.response_text = `Your net balance is ₹${netBalance} (you owe more money).`;
+            } else {
+              result.response_text = `Your debt balance is even! You're all settled up.`;
+            }
+          }
         }
       }
       

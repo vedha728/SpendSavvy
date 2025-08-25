@@ -74,10 +74,11 @@ export default function Chatbot() {
       };
       setMessages(prev => [...prev, botMessage]);
       
-      // If an expense was added or budget was set, refresh the data
-      if (response.intent === "add_expense" || response.intent === "set_budget") {
+      // If an expense was added, budget was set, or debt was added, refresh the data
+      if (response.intent === "add_expense" || response.intent === "set_budget" || response.intent === "add_debt") {
         queryClient.invalidateQueries({ queryKey: ["/api/expenses"] });
         queryClient.invalidateQueries({ queryKey: ["/api/expenses/analytics/stats"] });
+        queryClient.invalidateQueries({ queryKey: ["/api/debts"] });
       }
     },
     onError: () => {
