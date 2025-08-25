@@ -37,14 +37,43 @@ export async function processExpenseQuery(userMessage: string): Promise<ExpenseI
       };
     }
     
-    // Pattern matching for budget setting to 0 (be more specific to avoid catching 1000, 2000, etc.)
-    if (message.includes('remove budget') || message.includes('no budget') || 
-        (message.includes('budget') && (message.includes(' 0') || message.includes('to 0') || message.includes('= 0')))) {
-      return {
-        intent: "set_budget",
-        budget_amount: 0,
-        response_text: "✅ I'll remove your budget limit!"
-      };
+    // Pattern matching for budget setting commands
+    if (message.includes('budget')) {
+      // Check for budget removal first (setting to 0)
+      if (message.includes('remove budget') || message.includes('no budget') || 
+          (message.includes(' 0') || message.includes('to 0') || message.includes('= 0'))) {
+        return {
+          intent: "set_budget",
+          budget_amount: 0,
+          response_text: "✅ I'll remove your budget limit!"
+        };
+      }
+      
+      // Pattern for setting budget to a positive amount
+      const budgetPattern = /(?:set|my|budget).*?(?:to|=).*?₹?(\d+)/i;
+      const budgetMatch = userMessage.match(budgetPattern);
+      
+      if (budgetMatch) {
+        const budgetAmount = parseInt(budgetMatch[1]);
+        return {
+          intent: "set_budget",
+          budget_amount: budgetAmount,
+          response_text: `💰 Perfect! I've set your monthly budget to ₹${budgetAmount}. I'll help you track your spending and stay within your budget! 🎯`
+        };
+      }
+      
+      // Alternative pattern for simple "budget 5000" format
+      const simpleBudgetPattern = /budget.*?(\d+)/i;
+      const simpleBudgetMatch = userMessage.match(simpleBudgetPattern);
+      
+      if (simpleBudgetMatch) {
+        const budgetAmount = parseInt(simpleBudgetMatch[1]);
+        return {
+          intent: "set_budget",
+          budget_amount: budgetAmount,
+          response_text: `💰 Perfect! I've set your monthly budget to ₹${budgetAmount}. I'll help you track your spending and stay within your budget! 🎯`
+        };
+      }
     }
     
     // Pattern matching for debt commands
