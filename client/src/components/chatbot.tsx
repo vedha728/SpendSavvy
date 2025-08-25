@@ -176,7 +176,7 @@ export default function Chatbot() {
         </Button>
         {!isOpen && (
           <div className="absolute -top-12 right-0 bg-gray-900 text-white px-3 py-1 rounded-lg text-sm font-medium whitespace-nowrap shadow-lg">
-            AI Chat
+            Chatbot
             <div className="absolute top-full right-4 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
           </div>
         )}
@@ -206,8 +206,8 @@ export default function Chatbot() {
                   <Sparkles className="h-3 w-3 absolute ml-1 -mt-1 text-yellow-300" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-lg">AI Chat</h3>
-                  <p className="text-xs opacity-90">EXPENZA AI Assistant</p>
+                  <h3 className="font-bold text-lg">Chatbot</h3>
+                  <p className="text-xs opacity-90">EXPENZA Assistant</p>
                 </div>
               </div>
               <Button
