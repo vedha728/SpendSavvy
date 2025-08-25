@@ -161,7 +161,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (currentBudget === 0 && !message.toLowerCase().includes('budget') && !message.toLowerCase().includes('set')) {
         const budgetReminder = {
           intent: "general_help" as const,
-          response_text: "🎯 **First Add Your Budget!** \n\nI notice you haven't set up your monthly budget yet. Setting a budget helps me give you better insights about your spending. \n\nTry saying: \"Set my budget to ₹5000\" or \"My monthly budget is ₹10000\". \n\nAfter that, I can help you track expenses and tell you how much you have left to spend!"
+          response_text: "🎯 **First set your budget!** Try: \"Set my budget to ₹5000\""
         };
         res.json(budgetReminder);
         return;
