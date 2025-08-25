@@ -314,16 +314,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
 
-      // If it's an add debt intent, ask for confirmation instead of adding automatically
+      // If it's an add debt intent, create the debt automatically
       if (result.intent === "add_debt" && result.friend_name && result.debt_amount && result.debt_type && result.debt_description) {
-        const typeText = result.debt_type === "I_OWE_THEM" ? "you owe" : "they owe you";
-        result.response_text = `I understood: ${typeText} ${result.friend_name} ₹${result.debt_amount} for ${result.debt_description}. Would you like me to add this debt record? Reply "yes" to confirm or "no" to cancel.`;
-      }
-
-      // Handle confirmation for debt adding
-      if (message.toLowerCase().trim() === "yes" && result.intent === "general_help") {
-        // This is a simple confirmation - we'd need more sophisticated state management for production
-        result.response_text = "Please tell me again what debt you'd like to add, and I'll process it for you.";
+        try {
+          const debtData = {
+            friendName: result.friend_name,
+            amount: result.debt_amount.toString(),
+            type: result.debt_type,
+            description: result.debt_description,
+            isSettled: "false",
+          };
+          
+          const validatedData = insertDebtSchema.parse(debtData);
+          await storage.createDebt(validatedData);
+          
+          const typeText = result.debt_type === "I_OWE_THEM" ? "you owe" : "they owe you";
+          result.response_text = `Great! I've added the debt record: ${typeText} ${result.friend_name} ₹${result.debt_amount} for ${result.debt_description}.`;
+        } catch (error) {
+          result.response_text = "I understood your debt details, but couldn't save it. Please try again.";
+        }
       }
 
       // If it's a query debts intent, get debt information

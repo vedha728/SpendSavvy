@@ -66,7 +66,7 @@ export async function processExpenseQuery(userMessage: string): Promise<ExpenseI
           debt_amount,
           debt_type,
           debt_description,
-          response_text: `I'll add that debt record for you.`
+          response_text: `Great! I've added the debt record: ${debt_type === "I_OWE_THEM" ? "you owe" : "they owe you"} ${friend_name} ₹${debt_amount} for ${debt_description}.`
         };
       }
     }
