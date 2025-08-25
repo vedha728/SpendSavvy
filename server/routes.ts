@@ -156,6 +156,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Message is required" });
       }
 
+      // Check if budget is not set (0) and suggest setting it first
+      const currentBudget = await storage.getBudget();
+      if (currentBudget === 0 && !message.toLowerCase().includes('budget') && !message.toLowerCase().includes('set')) {
+        const budgetReminder = {
+          intent: "general_help" as const,
+          response_text: "🎯 **First Add Your Budget!** \n\nI notice you haven't set up your monthly budget yet. Setting a budget helps me give you better insights about your spending. \n\nTry saying: \"Set my budget to ₹5000\" or \"My monthly budget is ₹10000\". \n\nAfter that, I can help you track expenses and tell you how much you have left to spend!"
+        };
+        res.json(budgetReminder);
+        return;
+      }
+
       const result = await processExpenseQuery(message);
       
       // If it's an add expense intent, try to create the expense

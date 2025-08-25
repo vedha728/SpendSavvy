@@ -36,7 +36,7 @@ export class MemStorage implements IStorage {
 
   constructor() {
     this.expenses = new Map();
-    this.monthlyBudget = 10000; // Default budget
+    this.monthlyBudget = 0; // Default budget - user needs to set their budget first
     this.manualOverrides = {};
   }
 
