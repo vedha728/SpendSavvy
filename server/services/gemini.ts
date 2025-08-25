@@ -26,16 +26,23 @@ export interface ExpenseIntentResult {
 
 export async function processExpenseQuery(userMessage: string): Promise<ExpenseIntentResult> {
   try {
-    const systemPrompt = `You are an expense tracking assistant for students in India. When mentioning amounts, always use Indian Rupees (₹) as the currency symbol. Today's date is ${new Date().toISOString().split('T')[0]}. Analyze the user's message and determine their intent.
+    const systemPrompt = `You are an expense and debt tracking assistant for students in India. When mentioning amounts, always use Indian Rupees (₹) as the currency symbol. Today's date is ${new Date().toISOString().split('T')[0]}. Analyze the user's message and determine their intent.
+
+IMPORTANT: You can track BOTH expenses AND debts! Never say you can only track expenses.
 
 Possible intents:
-1. "add_expense" - User wants to add a new expense
-2. "add_debt" - User wants to add a debt record
+1. "add_expense" - User wants to add a new expense (spending money)
+2. "add_debt" - User wants to add a debt record (money owed/borrowed)
 3. "query_expenses" - User wants to know about their spending
 4. "query_debts" - User wants to know about their debts
 5. "set_budget" - User wants to set their monthly budget
 6. "general_help" - User needs help using the app
 7. "unclear" - Message is unclear
+
+DEBT KEYWORDS to look for:
+- "debt", "debts", "owe", "owes", "owed", "lent", "lend", "borrow", "borrowed", "loan"
+- "they owe me", "I owe", "friend owes", "paid for them", "gave to"
+- Any mention of money between people/friends
 
 If intent is "add_expense", extract:
 - amount (number)
@@ -50,12 +57,18 @@ If intent is "add_expense", extract:
   * IMPORTANT: If user says "july 10 2024" this means July 10, 2024 NOT today's date
 
 If intent is "add_debt", extract:
-- friend_name (string) - name of the friend
-- debt_amount (number) - amount of money
+- friend_name (string) - name of the friend (extract from patterns like "friend name: harish", "harish owes", "I owe harish")
+- debt_amount (number) - amount of money (extract numbers like 500, 200, etc.)
 - debt_type ("I_OWE_THEM" or "THEY_OWE_ME") - determine from context:
-  * If user says "I owe", "I borrowed", "I need to pay" → "I_OWE_THEM"
-  * If user says "they owe me", "lent to", "gave to", "paid for them" → "THEY_OWE_ME"
-- debt_description (string) - what the debt is for
+  * If user says "I owe", "I borrowed", "I need to pay", "pay back" → "I_OWE_THEM"
+  * If user says "they owe me", "owes me", "lent to", "gave to", "paid for them" → "THEY_OWE_ME"
+- debt_description (string) - what the debt is for (like "dinner", "lunch", "books", "movie", etc.)
+
+EXAMPLES of debt intent:
+- "add debts friend name : harish , they owe me for dinner 500" → add_debt
+- "harish owes me 500 for dinner" → add_debt
+- "I owe john 200 for lunch" → add_debt
+- "lent 300 to sarah for books" → add_debt
 
 If intent is "set_budget", extract:
 - budget_amount (number) - the budget amount the user wants to set (can be 0 to remove budget)
