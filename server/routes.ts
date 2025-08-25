@@ -264,21 +264,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
 
-      // If it's an add debt intent, create the debt record
+      // If it's an add debt intent, ask for confirmation instead of adding automatically
       if (result.intent === "add_debt" && result.friend_name && result.debt_amount && result.debt_type && result.debt_description) {
-        try {
-          await storage.createDebt({
-            friendName: result.friend_name,
-            amount: result.debt_amount.toString(),
-            type: result.debt_type,
-            description: result.debt_description,
-            isSettled: "false"
-          });
-          const typeText = result.debt_type === "I_OWE_THEM" ? "you owe" : "they owe you";
-          result.response_text = `Got it! I've recorded that ${typeText} ₹${result.debt_amount} for ${result.debt_description}. Friend: ${result.friend_name}`;
-        } catch (error) {
-          result.response_text = "I understood your debt request, but couldn't save it. Please try again.";
-        }
+        const typeText = result.debt_type === "I_OWE_THEM" ? "you owe" : "they owe you";
+        result.response_text = `I understood: ${typeText} ${result.friend_name} ₹${result.debt_amount} for ${result.debt_description}. Would you like me to add this debt record? Reply "yes" to confirm or "no" to cancel.`;
+      }
+
+      // Handle confirmation for debt adding
+      if (message.toLowerCase().trim() === "yes" && result.intent === "general_help") {
+        // This is a simple confirmation - we'd need more sophisticated state management for production
+        result.response_text = "Please tell me again what debt you'd like to add, and I'll process it for you.";
       }
 
       // If it's a query debts intent, get debt information

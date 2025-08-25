@@ -302,6 +302,13 @@ export default function Chatbot() {
               >
                 Set budget
               </button>
+              <button
+                onClick={() => handleQuickQuery("harish owes me 500 for dinner")}
+                className="px-2 py-1 bg-gray-100 rounded-full text-xs text-text-secondary hover:bg-gray-200 transition-colors"
+                data-testid="button-quick-query-debt"
+              >
+                Add debt
+              </button>
             </div>
           </div>
         </div>
