@@ -49,30 +49,19 @@ export async function processExpenseQuery(userMessage: string): Promise<ExpenseI
         };
       }
       
-      // Pattern for setting budget to a positive amount
-      const budgetPattern = /(?:set|my|budget).*?(?:to|=).*?₹?(\d+)/i;
-      const budgetMatch = userMessage.match(budgetPattern);
+      // More comprehensive pattern for budget setting
+      // This will match various formats like "set budget to 5000", "my budget to ₹5000", "budget 5000", etc.
+      const budgetAmountMatch = userMessage.match(/₹?(\d+)/);
       
-      if (budgetMatch) {
-        const budgetAmount = parseInt(budgetMatch[1]);
-        return {
-          intent: "set_budget",
-          budget_amount: budgetAmount,
-          response_text: `💰 Perfect! I've set your monthly budget to ₹${budgetAmount}. I'll help you track your spending and stay within your budget! 🎯`
-        };
-      }
-      
-      // Alternative pattern for simple "budget 5000" format
-      const simpleBudgetPattern = /budget.*?(\d+)/i;
-      const simpleBudgetMatch = userMessage.match(simpleBudgetPattern);
-      
-      if (simpleBudgetMatch) {
-        const budgetAmount = parseInt(simpleBudgetMatch[1]);
-        return {
-          intent: "set_budget",
-          budget_amount: budgetAmount,
-          response_text: `💰 Perfect! I've set your monthly budget to ₹${budgetAmount}. I'll help you track your spending and stay within your budget! 🎯`
-        };
+      if (budgetAmountMatch) {
+        const budgetAmount = parseInt(budgetAmountMatch[1]);
+        if (budgetAmount > 0) { // Only process positive amounts
+          return {
+            intent: "set_budget",
+            budget_amount: budgetAmount,
+            response_text: `💰 Perfect! I've set your monthly budget to ₹${budgetAmount}. I'll help you track your spending and stay within your budget! 🎯`
+          };
+        }
       }
     }
     
