@@ -111,39 +111,94 @@ Respond with JSON in this format:
 
 export async function generateExpenseInsights(expenses: any[], query: string): Promise<string> {
   try {
-    const systemPrompt = "You are a helpful expense tracking assistant for students in India that provides insights about spending patterns and answers questions about expenses. When mentioning amounts, always use Indian Rupees (₹) as the currency symbol.";
+    // Handle the case when there are no expenses
+    if (!expenses || expenses.length === 0) {
+      return "You haven't recorded any expenses yet. Start by adding your first expense using the form above or tell me something like 'I spent ₹50 on coffee at canteen'.";
+    }
+
+    // Calculate basic stats from expenses
+    const todayExpenses = expenses.filter(expense => {
+      const today = new Date();
+      const expenseDate = new Date(expense.date);
+      return expenseDate.toDateString() === today.toDateString();
+    });
+
+    const todayTotal = todayExpenses.reduce((sum, expense) => sum + parseFloat(expense.amount), 0);
+    const totalExpenses = expenses.reduce((sum, expense) => sum + parseFloat(expense.amount), 0);
+
+    // For specific queries, provide direct answers without AI
+    const queryLower = query.toLowerCase();
+    
+    if (queryLower.includes('today') || queryLower.includes("today's")) {
+      if (todayTotal === 0) {
+        return "Great news! You haven't spent anything today yet. Your wallet is safe! 💸";
+      }
+      return `Today you've spent ₹${todayTotal.toFixed(0)} across ${todayExpenses.length} expense${todayExpenses.length !== 1 ? 's' : ''}. ${todayExpenses.map(e => `₹${parseFloat(e.amount).toFixed(0)} on ${e.description}`).join(', ')}.`;
+    }
+
+    if (queryLower.includes('total') || queryLower.includes('how much')) {
+      return `Your total expenses so far are ₹${totalExpenses.toFixed(0)} across ${expenses.length} transactions. Today's spending: ₹${todayTotal.toFixed(0)}.`;
+    }
+
+    const systemPrompt = "You are a helpful expense tracking assistant for students in India that provides insights about spending patterns and answers questions about expenses. When mentioning amounts, always use Indian Rupees (₹) as the currency symbol. Be conversational, friendly, and provide actionable advice.";
     
     const prompt = `
 Based on the following expense data, provide helpful insights and answer the user's question.
 
-Expenses: ${JSON.stringify(expenses)}
+Expenses (recent first): ${JSON.stringify(expenses.slice(0, 10))}
+Total expenses: ${expenses.length}
+Today's total: ₹${todayTotal}
+Overall total: ₹${totalExpenses}
+
 User question: "${query}"
 
-Provide a concise, helpful response about their spending patterns, suggestions, or direct answers to their question.
+Provide a concise, friendly response about their spending patterns, suggestions, or direct answers to their question. Be conversational and include specific amounts and categories when relevant.
 `;
 
     const response = await ai.models.generateContent({
-      model: "gemini-2.5-pro",
+      model: "gemini-2.5-flash",
       config: {
         systemInstruction: systemPrompt,
       },
       contents: prompt,
     });
 
-    return response.text || "I couldn't analyze your expenses right now.";
+    return response.text || `You've spent ₹${todayTotal.toFixed(0)} today and ₹${totalExpenses.toFixed(0)} in total. Let me know if you'd like insights about any specific category or time period!`;
   } catch (error) {
     console.error("Gemini API error:", error);
     
+    // Provide useful fallback responses based on the query
+    const queryLower = query.toLowerCase();
+    
+    if (queryLower.includes('today') || queryLower.includes("today's")) {
+      const todayExpenses = expenses.filter(expense => {
+        const today = new Date();
+        const expenseDate = new Date(expense.date);
+        return expenseDate.toDateString() === today.toDateString();
+      });
+      const todayTotal = todayExpenses.reduce((sum, expense) => sum + parseFloat(expense.amount), 0);
+      
+      if (todayTotal === 0) {
+        return "You haven't spent anything today yet! 🎉";
+      }
+      return `Today you've spent ₹${todayTotal.toFixed(0)} on ${todayExpenses.length} expense${todayExpenses.length !== 1 ? 's' : ''}.`;
+    }
+    
+    if (queryLower.includes('total')) {
+      const totalExpenses = expenses.reduce((sum, expense) => sum + parseFloat(expense.amount), 0);
+      return `Your total expenses are ₹${totalExpenses.toFixed(0)} across ${expenses.length} transactions.`;
+    }
+    
     // Check if it's a quota/billing issue
     if (error instanceof Error && error.message.includes('quota')) {
-      return "I'm currently unable to analyze your expenses due to API quota limits. Please check your Gemini account usage.";
+      return "I'm currently unable to provide detailed insights due to API limits, but I can see your expenses. Try asking specific questions like 'How much did I spend today?' and I'll give you the exact numbers!";
     }
     
     // Check if it's a rate limit issue
     if (error instanceof Error && error.message.includes('rate limit')) {
-      return "I'm being rate limited. Please wait a moment and try your question again.";
+      return "I'm processing too many requests right now. Here's what I can tell you: you have " + expenses.length + " expenses recorded. Try asking again in a moment for detailed insights!";
     }
     
-    return "I'm having trouble connecting to my AI service right now. Please try again in a moment.";
+    return "I can see your expense data but I'm having trouble generating insights right now. Try asking specific questions like 'How much today?' or 'What's my biggest expense?' and I'll give you direct answers!";
   }
 }
