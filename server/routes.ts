@@ -278,6 +278,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (typeof amount !== 'number' || amount < 0) {
         return res.status(400).json({ message: "Invalid amount" });
       }
+      // Prevent resetting today's spending to 0 via API
+      if (amount === 0) {
+        return res.status(400).json({ message: "Cannot reset today's spending to zero" });
+      }
       await storage.setTodayTotal(amount);
       res.json({ success: true });
     } catch (error) {
@@ -320,6 +324,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (typeof amount !== 'number' || amount < 0) {
         return res.status(400).json({ message: "Invalid amount" });
       }
+      // Allow setting budget to 0 
       await storage.setBudget(amount);
       res.json({ success: true });
     } catch (error) {

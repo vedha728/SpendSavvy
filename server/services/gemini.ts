@@ -44,7 +44,9 @@ If intent is "add_expense", extract:
   * IMPORTANT: If user says "july 10 2024" this means July 10, 2024 NOT today's date
 
 If intent is "set_budget", extract:
-- budget_amount (number) - the budget amount the user wants to set
+- budget_amount (number) - the budget amount the user wants to set (can be 0 to remove budget)
+
+IMPORTANT: If user asks to "reset today's spending", "make today's spending 0", "clear today", respond with intent "unclear" and explain this is not allowed for accuracy.
 
 If intent is "query_expenses", determine query_type:
 - "total" - total spending

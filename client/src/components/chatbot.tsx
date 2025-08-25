@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { MessageCircle, X, Send, Bot, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -26,6 +26,7 @@ export default function Chatbot() {
   ]);
   const [inputValue, setInputValue] = useState("");
   const [budgetMessageAdded, setBudgetMessageAdded] = useState(false);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const { data: stats } = useQuery({
     queryKey: ["/api/expenses/analytics/stats"],
@@ -46,6 +47,15 @@ export default function Chatbot() {
       setBudgetMessageAdded(true);
     }
   }, [isOpen, stats, budgetMessageAdded]);
+
+  // Auto-scroll to bottom when new messages are added
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
 
   const chatMutation = useMutation({
     mutationFn: api.chat.sendMessage,
@@ -183,6 +193,7 @@ export default function Chatbot() {
                 </div>
               </div>
             )}
+            <div ref={messagesEndRef} />
           </div>
 
           <div className="p-4 border-t border-gray-100">
