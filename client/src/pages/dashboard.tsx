@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Wallet, University } from "lucide-react";
+import { Wallet } from "lucide-react";
 import QuickStats from "@/components/quick-stats";
 import ExpenseForm from "@/components/expense-form";
 import ExpenseList from "@/components/expense-list";
@@ -14,20 +14,15 @@ export default function Dashboard() {
       {/* Header */}
       <header className="bg-surface shadow-sm border-b border-gray-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
-                <Wallet className="text-white text-lg" />
+          <div className="flex justify-center items-center h-20">
+            <div className="flex items-center space-x-4">
+              <div className="w-12 h-12 bg-gradient-to-br from-purple-600 via-blue-600 to-indigo-700 rounded-xl flex items-center justify-center shadow-lg transform rotate-12">
+                <Wallet className="text-white text-xl transform -rotate-12" />
               </div>
               <div>
-                <h1 className="text-xl font-bold text-text-primary">ExpenseWise</h1>
-                <p className="text-xs text-text-secondary">Smart Student Tracker</p>
-              </div>
-            </div>
-            <div className="flex items-center space-x-4">
-              <div className="hidden md:flex items-center space-x-2 bg-gray-50 rounded-full px-3 py-1">
-                <University className="text-primary text-sm" />
-                <span className="text-sm font-medium">SASTRA University</span>
+                <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-600 via-blue-600 to-indigo-700 bg-clip-text text-transparent">
+                  ExpenseWise
+                </h1>
               </div>
             </div>
           </div>
