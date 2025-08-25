@@ -26,6 +26,51 @@ export interface ExpenseIntentResult {
 
 export async function processExpenseQuery(userMessage: string): Promise<ExpenseIntentResult> {
   try {
+    // Quick pattern matching for debt commands to avoid API timeouts
+    const message = userMessage.toLowerCase();
+    
+    // Pattern matching for debt commands
+    if (message.includes('debt') || message.includes('owe') || message.includes('lend') || message.includes('borrow')) {
+      const debtPattern = /(?:friend name\s*:\s*(\w+)|(\w+)\s+owe|owe\s+(\w+)|lent?\s+(?:to\s+)?(\w+)|(\w+)\s+lent)/i;
+      const amountPattern = /(\d+)/;
+      const typePattern = /(they owe me|i owe|owe me|lent to|gave to|paid for)/i;
+      
+      const friendMatch = userMessage.match(debtPattern);
+      const amountMatch = userMessage.match(amountPattern);
+      const typeMatch = userMessage.match(typePattern);
+      
+      if (friendMatch && amountMatch) {
+        const friend_name = friendMatch[1] || friendMatch[2] || friendMatch[3] || friendMatch[4] || friendMatch[5] || 'Unknown';
+        const debt_amount = parseInt(amountMatch[1]);
+        
+        let debt_type = "THEY_OWE_ME"; // default
+        if (typeMatch) {
+          const typeText = typeMatch[1].toLowerCase();
+          if (typeText.includes('i owe') || typeText.includes('owe them')) {
+            debt_type = "I_OWE_THEM";
+          }
+        }
+        
+        // Extract description
+        const words = userMessage.toLowerCase().split(' ');
+        const descriptionWords = words.filter(word => 
+          !word.match(/\d/) && 
+          !['debt', 'debts', 'owe', 'owes', 'friend', 'name', 'they', 'me', 'i', 'for'].includes(word) &&
+          word !== friend_name.toLowerCase()
+        );
+        const debt_description = descriptionWords.join(' ') || 'expense';
+        
+        return {
+          intent: "add_debt",
+          friend_name,
+          debt_amount,
+          debt_type,
+          debt_description,
+          response_text: `I'll add that debt record for you.`
+        };
+      }
+    }
+    
     const systemPrompt = `You are an expense and debt tracking assistant for students in India. When mentioning amounts, always use Indian Rupees (₹) as the currency symbol. Today's date is ${new Date().toISOString().split('T')[0]}. Analyze the user's message and determine their intent.
 
 IMPORTANT: You can track BOTH expenses AND debts! Never say you can only track expenses.
