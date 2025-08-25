@@ -38,17 +38,21 @@ export default function Dashboard() {
         {/* Quick Stats */}
         <QuickStats />
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
           {/* Expense Form */}
           <div className="lg:col-span-1">
             <ExpenseForm activeFilter={activeFilter} setActiveFilter={setActiveFilter} />
           </div>
 
-          {/* Main Content */}
-          <div className="lg:col-span-2 space-y-6">
-            <ExpenseCharts />
+          {/* Expense List */}
+          <div className="lg:col-span-2">
             <ExpenseList activeFilter={activeFilter} />
           </div>
+        </div>
+
+        {/* Spending Overview - Moved to bottom */}
+        <div className="mb-8">
+          <ExpenseCharts />
         </div>
       </div>
 
