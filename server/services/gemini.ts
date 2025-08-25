@@ -37,8 +37,9 @@ export async function processExpenseQuery(userMessage: string): Promise<ExpenseI
       };
     }
     
-    // Pattern matching for budget setting to 0
-    if ((message.includes('budget') && message.includes('0')) || message.includes('remove budget') || message.includes('no budget')) {
+    // Pattern matching for budget setting to 0 (be more specific to avoid catching 1000, 2000, etc.)
+    if (message.includes('remove budget') || message.includes('no budget') || 
+        (message.includes('budget') && (message.includes(' 0') || message.includes('to 0') || message.includes('= 0')))) {
       return {
         intent: "set_budget",
         budget_amount: 0,
