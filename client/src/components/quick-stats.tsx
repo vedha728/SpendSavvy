@@ -49,25 +49,26 @@ export default function QuickStats() {
         testId="today-spending"
       />
 
-      <div className="bg-surface rounded-xl shadow-sm p-6 border border-gray-100" data-testid="month-spending">
+      <div className="bg-surface rounded-xl shadow-sm p-6 border border-gray-100 relative" data-testid="month-spending">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center space-x-3">
             <div className="w-12 h-12 bg-blue-50 rounded-full flex items-center justify-center">
               <TrendingUp className="h-6 w-6 text-blue-500" />
             </div>
-            <div>
-              <p className="text-sm font-medium text-text-secondary">Month</p>
-              <Select value={selectedMonth.toString()} onValueChange={(value) => setSelectedMonth(parseInt(value))}>
-                <SelectTrigger className="w-32 h-6 text-xs border-none p-0 focus:ring-0">
-                  <SelectValue className="text-xs" />
-                  <ChevronDown className="h-3 w-3" />
-                </SelectTrigger>
-                <SelectContent>
-                  {months.map((month, index) => (
-                    <SelectItem key={index} value={index.toString()}>{month}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-medium text-text-secondary mb-1">Month</p>
+              <div className="relative z-10">
+                <Select value={selectedMonth.toString()} onValueChange={(value) => setSelectedMonth(parseInt(value))}>
+                  <SelectTrigger className="w-28 h-7 text-xs border border-gray-200 bg-white rounded-md px-2">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="z-50">
+                    {months.map((month, index) => (
+                      <SelectItem key={index} value={index.toString()}>{month}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
           </div>
         </div>
@@ -76,25 +77,26 @@ export default function QuickStats() {
         </div>
       </div>
 
-      <div className="bg-surface rounded-xl shadow-sm p-6 border border-gray-100" data-testid="year-spending">
+      <div className="bg-surface rounded-xl shadow-sm p-6 border border-gray-100 relative" data-testid="year-spending">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center space-x-3">
             <div className="w-12 h-12 bg-purple-50 rounded-full flex items-center justify-center">
               <CalendarDays className="h-6 w-6 text-purple-500" />
             </div>
-            <div>
-              <p className="text-sm font-medium text-text-secondary">Year</p>
-              <Select value={selectedYear.toString()} onValueChange={(value) => setSelectedYear(parseInt(value))}>
-                <SelectTrigger className="w-20 h-6 text-xs border-none p-0 focus:ring-0">
-                  <SelectValue className="text-xs" />
-                  <ChevronDown className="h-3 w-3" />
-                </SelectTrigger>
-                <SelectContent>
-                  {years.map(year => (
-                    <SelectItem key={year} value={year.toString()}>{year}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-medium text-text-secondary mb-1">Year</p>
+              <div className="relative z-10">
+                <Select value={selectedYear.toString()} onValueChange={(value) => setSelectedYear(parseInt(value))}>
+                  <SelectTrigger className="w-20 h-7 text-xs border border-gray-200 bg-white rounded-md px-2">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="z-50">
+                    {years.map(year => (
+                      <SelectItem key={year} value={year.toString()}>{year}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
           </div>
         </div>
