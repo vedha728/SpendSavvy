@@ -18,10 +18,13 @@ export default function Dashboard() {
           <div className="flex justify-center items-center h-20">
             <div className="flex items-center space-x-4">
               <div className="w-12 h-12 rounded-xl flex items-center justify-center shadow-lg">
-                <img src={expenzaLogo} alt="Logo" className="w-12 h-12 object-contain" />
+                <img src={expenzaLogo} alt="EXPENZA" className="w-12 h-12 object-contain" />
               </div>
               <div>
-                <p className="text-lg text-gray-600 font-medium tracking-wide">Track Save Thrive</p>
+                <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-600 via-blue-600 to-indigo-700 bg-clip-text text-transparent">
+                  EXPENZA
+                </h1>
+                <p className="text-sm text-gray-600 font-medium tracking-wide">Track Save Thrive</p>
               </div>
             </div>
           </div>
