@@ -1,8 +1,8 @@
-# ExpenseWise - Student Expense Tracker
+# EXPENZA - Track Save Thrive
 
 ## Overview
 
-ExpenseWise is a modern full-stack expense tracking application specifically designed for students. Built with a React frontend and Express.js backend, the application provides intelligent expense management through AI-powered insights, interactive charts, and a conversational chatbot interface. The system features comprehensive CRUD operations for expenses, real-time analytics, and category-based organization to help students monitor their spending habits effectively.
+EXPENZA is a modern full-stack expense tracking application specifically designed for students. Built with a React frontend and Express.js backend, the application provides intelligent expense management through AI-powered insights, interactive charts, and a conversational chatbot interface. The system features comprehensive CRUD operations for expenses, real-time analytics, and category-based organization to help students monitor their spending habits effectively.
 
 ## User Preferences
 

@@ -71,7 +71,7 @@ export async function processExpenseQuery(userMessage: string): Promise<ExpenseI
       }
     }
     
-    const systemPrompt = `You are an expense and debt tracking assistant for students in India. When mentioning amounts, always use Indian Rupees (₹) as the currency symbol. Today's date is ${new Date().toISOString().split('T')[0]}. Analyze the user's message and determine their intent.
+    const systemPrompt = `You are EXPENZA, an AI assistant that helps students in India track, save, and thrive with their finances. When mentioning amounts, always use Indian Rupees (₹) as the currency symbol. Today's date is ${new Date().toISOString().split('T')[0]}. Analyze the user's message and determine their intent.
 
 IMPORTANT: You can track BOTH expenses AND debts! Never say you can only track expenses.
 
@@ -230,7 +230,7 @@ export async function generateExpenseInsights(expenses: any[], query: string): P
       return `Your total expenses so far are ₹${totalExpenses.toFixed(0)} across ${expenses.length} transactions. Today's spending: ₹${todayTotal.toFixed(0)}.`;
     }
 
-    const systemPrompt = "You are a helpful expense tracking assistant for students in India that provides insights about spending patterns and answers questions about expenses. When mentioning amounts, always use Indian Rupees (₹) as the currency symbol. Be conversational, friendly, and provide actionable advice.";
+    const systemPrompt = "You are EXPENZA, an AI assistant that helps students in India track, save, and thrive financially. You provide insights about spending patterns and answer questions about expenses and debts. When mentioning amounts, always use Indian Rupees (₹) as the currency symbol. Be conversational, friendly, and provide actionable advice.";
     
     const prompt = `
 Based on the following expense data, provide helpful insights and answer the user's question.

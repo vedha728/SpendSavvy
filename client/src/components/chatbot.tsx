@@ -19,7 +19,7 @@ export default function Chatbot() {
   const [messages, setMessages] = useState<Message[]>([
     {
       id: "1",
-      text: "Hi! I'm your expense assistant. I can help you add expenses, check your spending, or answer questions. Try saying \"Add lunch expense of ₹80\"",
+      text: "Hi! I'm your EXPENZA assistant. I can help you track, save, and thrive with your expenses and debts. Try saying \"Add lunch expense of ₹80\"",
       isBot: true,
       timestamp: new Date(),
     },
@@ -207,7 +207,7 @@ export default function Chatbot() {
                 </div>
                 <div>
                   <h3 className="font-bold text-lg">AI Chat</h3>
-                  <p className="text-xs opacity-90">Intelligent expense assistant</p>
+                  <p className="text-xs opacity-90">EXPENZA AI Assistant</p>
                 </div>
               </div>
               <Button
