@@ -24,7 +24,6 @@ export default function Dashboard() {
                 <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-600 via-blue-600 to-indigo-700 bg-clip-text text-transparent">
                   EXPENZA
                 </h1>
-                <p className="text-sm text-gray-600 font-medium tracking-wide">Track Save Thrive</p>
               </div>
             </div>
           </div>

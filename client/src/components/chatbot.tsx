@@ -56,11 +56,17 @@ export default function Chatbot() {
 
   // Auto-scroll to bottom when new messages are added
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: "smooth", block: "end" });
+    }
   };
 
   useEffect(() => {
-    scrollToBottom();
+    // Small delay to ensure DOM is updated before scrolling
+    const timer = setTimeout(() => {
+      scrollToBottom();
+    }, 100);
+    return () => clearTimeout(timer);
   }, [messages]);
 
   const chatMutation = useMutation({
@@ -73,6 +79,11 @@ export default function Chatbot() {
         timestamp: new Date(),
       };
       setMessages(prev => [...prev, botMessage]);
+      
+      // Force scroll after adding bot message
+      setTimeout(() => {
+        scrollToBottom();
+      }, 150);
       
       // If an expense was added, budget was set, or debt was added, refresh the data
       if (response.intent === "add_expense" || response.intent === "set_budget" || response.intent === "add_debt") {
