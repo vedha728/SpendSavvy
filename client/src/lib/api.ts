@@ -50,8 +50,13 @@ export const api = {
       await apiRequest("DELETE", `/api/expenses/${id}`);
     },
     
-    getStats: async (): Promise<ExpenseStats> => {
-      const response = await apiRequest("GET", "/api/expenses/analytics/stats");
+    getStats: async (year?: number, month?: number): Promise<ExpenseStats> => {
+      const params = new URLSearchParams();
+      if (year !== undefined) params.set('year', year.toString());
+      if (month !== undefined) params.set('month', month.toString());
+      
+      const url = `/api/expenses/analytics/stats${params.toString() ? `?${params.toString()}` : ''}`;
+      const response = await apiRequest("GET", url);
       return response.json();
     },
   },

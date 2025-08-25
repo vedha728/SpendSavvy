@@ -101,14 +101,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const expenses = await storage.getExpenses();
       const today = new Date();
+      
+      // Get year and month from query params or default to current
+      const selectedYear = req.query.year ? parseInt(req.query.year as string) : today.getFullYear();
+      const selectedMonth = req.query.month ? parseInt(req.query.month as string) : today.getMonth();
+      
       const startOfToday = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-      const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-      const startOfYear = new Date(today.getFullYear(), 0, 1);
+      const startOfSelectedMonth = new Date(selectedYear, selectedMonth, 1);
+      const endOfSelectedMonth = new Date(selectedYear, selectedMonth + 1, 0);
+      const startOfSelectedYear = new Date(selectedYear, 0, 1);
+      const endOfSelectedYear = new Date(selectedYear, 11, 31);
       
       // Calculate stats
       const todayExpenses = expenses.filter(e => new Date(e.date) >= startOfToday);
-      const monthExpenses = expenses.filter(e => new Date(e.date) >= startOfMonth);
-      const yearExpenses = expenses.filter(e => new Date(e.date) >= startOfYear);
+      const monthExpenses = expenses.filter(e => {
+        const expenseDate = new Date(e.date);
+        return expenseDate >= startOfSelectedMonth && expenseDate <= endOfSelectedMonth;
+      });
+      const yearExpenses = expenses.filter(e => {
+        const expenseDate = new Date(e.date);
+        return expenseDate >= startOfSelectedYear && expenseDate <= endOfSelectedYear;
+      });
       
       // Calculate base values from expenses
       const calculatedTodayTotal = todayExpenses.reduce((sum, e) => sum + parseFloat(e.amount), 0);

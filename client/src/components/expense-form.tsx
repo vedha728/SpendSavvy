@@ -17,6 +17,8 @@ const quickFilters = [
   { label: "Today", value: "today" },
   { label: "This Week", value: "week" },
   { label: "This Month", value: "month" },
+  { label: "2024", value: "2024" },
+  { label: "2025", value: "2025" },
   { label: "Canteen", value: "canteen" },
   { label: "Travel", value: "travel" },
 ];

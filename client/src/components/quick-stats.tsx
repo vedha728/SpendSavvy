@@ -1,13 +1,30 @@
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Calendar, TrendingUp, PiggyBank, Calculator, CalendarDays } from "lucide-react";
+import { Calendar, TrendingUp, PiggyBank, Calculator, CalendarDays, ChevronDown } from "lucide-react";
 import { api } from "@/lib/api";
 import EditableStat from "./editable-stat";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export default function QuickStats() {
+  const currentYear = new Date().getFullYear();
+  const currentMonth = new Date().getMonth();
+  
+  const [selectedYear, setSelectedYear] = useState(currentYear);
+  const [selectedMonth, setSelectedMonth] = useState(currentMonth);
+  
   const { data: stats, isLoading } = useQuery({
-    queryKey: ["/api/expenses/analytics/stats"],
-    queryFn: () => api.expenses.getStats(),
+    queryKey: ["/api/expenses/analytics/stats", selectedYear, selectedMonth],
+    queryFn: () => api.expenses.getStats(selectedYear, selectedMonth),
   });
+
+  // Generate years from 2000 to current year + 5
+  const years = Array.from({ length: currentYear - 2000 + 6 }, (_, i) => 2000 + i);
+  
+  // Month names
+  const months = [
+    "January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December"
+  ];
 
   if (isLoading) {
     return (
@@ -32,23 +49,59 @@ export default function QuickStats() {
         testId="today-spending"
       />
 
-      <EditableStat
-        label="This Month"
-        value={stats?.monthTotal || 0}
-        icon={<TrendingUp className="h-6 w-6 text-blue-500" />}
-        colorClass="bg-blue-50"
-        onUpdate={api.stats.setMonthTotal}
-        testId="month-spending"
-      />
+      <div className="bg-surface rounded-xl shadow-sm p-6 border border-gray-100" data-testid="month-spending">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center space-x-3">
+            <div className="w-12 h-12 bg-blue-50 rounded-full flex items-center justify-center">
+              <TrendingUp className="h-6 w-6 text-blue-500" />
+            </div>
+            <div>
+              <p className="text-sm font-medium text-text-secondary">Month</p>
+              <Select value={selectedMonth.toString()} onValueChange={(value) => setSelectedMonth(parseInt(value))}>
+                <SelectTrigger className="w-32 h-6 text-xs border-none p-0 focus:ring-0">
+                  <SelectValue className="text-xs" />
+                  <ChevronDown className="h-3 w-3" />
+                </SelectTrigger>
+                <SelectContent>
+                  {months.map((month, index) => (
+                    <SelectItem key={index} value={index.toString()}>{month}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+        </div>
+        <div className="text-2xl font-bold text-text-primary">
+          ₹{(stats?.monthTotal || 0).toFixed(0)}
+        </div>
+      </div>
 
-      <EditableStat
-        label="This Year"
-        value={stats?.yearTotal || 0}
-        icon={<CalendarDays className="h-6 w-6 text-purple-500" />}
-        colorClass="bg-purple-50"
-        onUpdate={async () => {}}
-        testId="year-spending"
-      />
+      <div className="bg-surface rounded-xl shadow-sm p-6 border border-gray-100" data-testid="year-spending">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center space-x-3">
+            <div className="w-12 h-12 bg-purple-50 rounded-full flex items-center justify-center">
+              <CalendarDays className="h-6 w-6 text-purple-500" />
+            </div>
+            <div>
+              <p className="text-sm font-medium text-text-secondary">Year</p>
+              <Select value={selectedYear.toString()} onValueChange={(value) => setSelectedYear(parseInt(value))}>
+                <SelectTrigger className="w-20 h-6 text-xs border-none p-0 focus:ring-0">
+                  <SelectValue className="text-xs" />
+                  <ChevronDown className="h-3 w-3" />
+                </SelectTrigger>
+                <SelectContent>
+                  {years.map(year => (
+                    <SelectItem key={year} value={year.toString()}>{year}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+        </div>
+        <div className="text-2xl font-bold text-text-primary">
+          ₹{(stats?.yearTotal || 0).toFixed(0)}
+        </div>
+      </div>
 
       <EditableStat
         label="Budget Left"

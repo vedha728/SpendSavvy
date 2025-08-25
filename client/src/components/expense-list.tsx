@@ -50,6 +50,12 @@ export default function ExpenseList({ activeFilter }: ExpenseListProps) {
       case "canteen":
       case "travel":
         return allExpenses.filter(expense => expense.category === activeFilter);
+      case "2024":
+      case "2025":
+        return allExpenses.filter(expense => {
+          const expenseDate = new Date(expense.date);
+          return expenseDate.getFullYear() === parseInt(activeFilter);
+        });
       default:
         return allExpenses;
     }
