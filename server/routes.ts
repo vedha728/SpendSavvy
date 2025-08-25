@@ -57,7 +57,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(201).json(expense);
     } catch (error) {
       console.error("Error creating expense:", error);
-      res.status(400).json({ message: "Invalid expense data" });
+      if (error instanceof Error) {
+        res.status(400).json({ message: error.message });
+      } else {
+        res.status(500).json({ message: "Failed to create expense" });
+      }
     }
   });
 
