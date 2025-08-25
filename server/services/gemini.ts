@@ -36,11 +36,12 @@ If intent is "add_expense", extract:
 - category (canteen, travel, books, mobile, accommodation, entertainment, medical, clothing, stationery, others)
 - description (what they bought)
 - date (CRITICAL: Parse dates carefully):
-  * If date is mentioned like "august 10 2025", "08/10/2025", "2025-08-10" → return "2025-08-10"
-  * If date is mentioned like "august 10", "august 05", "08/10", "05/08" (no year) → return "NEED_YEAR:august 05" or "NEED_YEAR:08/10"
+  * If specific date with year is mentioned like "july 10 2024", "august 10 2025", "08/10/2025", "2025-08-10" → return exact ISO format "2024-07-10", "2025-08-10"
+  * If date without year like "august 10", "august 05", "08/10", "05/08" → return "NEED_YEAR:august 05" or "NEED_YEAR:08/10"
   * If "today", "yesterday" → calculate and return proper ISO date (YYYY-MM-DD)
   * If "last week", "last month" → return "NEED_CLARIFICATION:last week"
   * If no date mentioned → return "TODAY"
+  * IMPORTANT: If user says "july 10 2024" this means July 10, 2024 NOT today's date
 
 If intent is "set_budget", extract:
 - budget_amount (number) - the budget amount the user wants to set

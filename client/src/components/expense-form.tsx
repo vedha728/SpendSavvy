@@ -17,10 +17,6 @@ const quickFilters = [
   { label: "Today", value: "today" },
   { label: "This Week", value: "week" },
   { label: "This Month", value: "month" },
-  { label: "2024", value: "2024" },
-  { label: "2025", value: "2025" },
-  { label: "Canteen", value: "canteen" },
-  { label: "Travel", value: "travel" },
 ];
 
 interface ExpenseFormProps {
@@ -211,7 +207,7 @@ export default function ExpenseForm({ activeFilter, setActiveFilter }: ExpenseFo
           <h3 className="text-lg font-semibold text-text-primary">Quick Filters</h3>
         </div>
         <div className="p-4">
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-2 items-center">
             {quickFilters.map((filter) => (
               <button
                 key={filter.value}
@@ -226,6 +222,24 @@ export default function ExpenseForm({ activeFilter, setActiveFilter }: ExpenseFo
                 {filter.label}
               </button>
             ))}
+            
+            {/* Year Dropdown */}
+            <div className="flex items-center space-x-2">
+              <span className="text-sm text-text-secondary">Year:</span>
+              <Select 
+                value={activeFilter.match(/^\d{4}$/) ? activeFilter : ""} 
+                onValueChange={(value) => setActiveFilter(value)}
+              >
+                <SelectTrigger className="w-20 h-8 text-xs">
+                  <SelectValue placeholder="Year" />
+                </SelectTrigger>
+                <SelectContent>
+                  {Array.from({ length: new Date().getFullYear() - 2000 + 6 }, (_, i) => 2000 + i).map(year => (
+                    <SelectItem key={year} value={year.toString()}>{year}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
         </div>
       </div>
