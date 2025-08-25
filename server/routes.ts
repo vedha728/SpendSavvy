@@ -161,17 +161,59 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // If it's an add expense intent, try to create the expense
       if (result.intent === "add_expense" && result.amount && result.category && result.description) {
         try {
+          // Handle special date cases
+          if (result.date?.startsWith("NEED_YEAR:")) {
+            const partialDate = result.date.replace("NEED_YEAR:", "");
+            result.response_text = `I understood your expense: ₹${result.amount} for ${result.description}. But I need to know which year you meant for "${partialDate}". Please specify like "${partialDate} 2024" or "${partialDate} 2025".`;
+            res.json(result);
+            return;
+          }
+          
+          if (result.date?.startsWith("NEED_CLARIFICATION:")) {
+            const vagueTerm = result.date.replace("NEED_CLARIFICATION:", "");
+            result.response_text = `I understood your expense: ₹${result.amount} for ${result.description}. Could you be more specific about "${vagueTerm}"? Please provide an exact date like "august 10 2025" or "08/10/2025".`;
+            res.json(result);
+            return;
+          }
+
+          // Process the date
+          let expenseDate: Date;
+          if (!result.date || result.date === "TODAY") {
+            expenseDate = new Date();
+          } else {
+            // Try to parse the date
+            expenseDate = new Date(result.date);
+            
+            // Validate the parsed date
+            if (isNaN(expenseDate.getTime())) {
+              result.response_text = `I understood your expense: ₹${result.amount} for ${result.description}, but I couldn't understand the date "${result.date}". Please use formats like "august 10 2025" or "08/10/2025".`;
+              res.json(result);
+              return;
+            }
+          }
+
           const expenseData = {
             amount: result.amount.toString(),
             category: result.category,
             description: result.description,
-            date: result.date ? new Date(result.date) : new Date(),
+            date: expenseDate,
           };
           
           const validatedData = insertExpenseSchema.parse(expenseData);
           await storage.createExpense(validatedData);
           
-          result.response_text = `Great! I've added your expense: ₹${result.amount} for ${result.description} in the ${result.category} category.`;
+          // Format the date for display
+          const dateStr = expenseDate.toLocaleDateString('en-IN', { 
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric' 
+          });
+          
+          if (expenseDate.toDateString() === new Date().toDateString()) {
+            result.response_text = `Great! I've added your expense: ₹${result.amount} for ${result.description} in the ${result.category} category for today.`;
+          } else {
+            result.response_text = `Great! I've added your expense: ₹${result.amount} for ${result.description} in the ${result.category} category for ${dateStr}.`;
+          }
         } catch (error) {
           result.response_text = "I understood your expense details, but couldn't save it. Please try using the form instead.";
         }

@@ -22,7 +22,7 @@ export interface ExpenseIntentResult {
 
 export async function processExpenseQuery(userMessage: string): Promise<ExpenseIntentResult> {
   try {
-    const systemPrompt = `You are an expense tracking assistant for students in India. When mentioning amounts, always use Indian Rupees (₹) as the currency symbol. Analyze the user's message and determine their intent.
+    const systemPrompt = `You are an expense tracking assistant for students in India. When mentioning amounts, always use Indian Rupees (₹) as the currency symbol. Today's date is ${new Date().toISOString().split('T')[0]}. Analyze the user's message and determine their intent.
 
 Possible intents:
 1. "add_expense" - User wants to add a new expense
@@ -35,7 +35,12 @@ If intent is "add_expense", extract:
 - amount (number)
 - category (canteen, travel, books, mobile, accommodation, entertainment, medical, clothing, stationery, others)
 - description (what they bought)
-- date (if mentioned, otherwise use today)
+- date (CRITICAL: Parse dates carefully):
+  * If date is mentioned like "august 10 2025", "08/10/2025", "2025-08-10" → return "2025-08-10"
+  * If date is mentioned like "august 10", "08/10" (no year) → return "NEED_YEAR:august 10" or "NEED_YEAR:08/10"
+  * If "today", "yesterday" → calculate and return proper ISO date (YYYY-MM-DD)
+  * If "last week", "last month" → return "NEED_CLARIFICATION:last week"
+  * If no date mentioned → return "TODAY"
 
 If intent is "set_budget", extract:
 - budget_amount (number) - the budget amount the user wants to set
