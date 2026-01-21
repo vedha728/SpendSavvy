@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { PieChart, Pie, Cell, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, AreaChart, Area } from "recharts";
 import { api } from "@/lib/api";
-import { categories } from "@shared/schema";
+import { categories } from "@shared/types";
 
 // Professional color palette with gradients
 const COLORS = [
