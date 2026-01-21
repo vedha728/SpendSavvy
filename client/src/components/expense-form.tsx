@@ -10,8 +10,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
 import { api } from "@/lib/api";
-import { insertExpenseSchema, categories } from "@shared/schema";
-import type { InsertExpense } from "@shared/schema";
+import { categories } from "@shared/types";
+import type { InsertExpense } from "@shared/types";
 
 const quickFilters = [
   { label: "Today", value: "today" },
