@@ -11,7 +11,16 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { useToast } from "@/hooks/use-toast";
 import { api } from "@/lib/api";
 import { categories } from "@shared/types";
-import type { InsertExpense } from "@shared/types";
+import type { InsertExpense } from "@shared/types;
+
+import { z } from "zod";
+
+const expenseFormSchema = z.object({
+  amount: z.string().min(1, "Amount is required"),
+  category: z.string().min(1, "Category is required"),
+  description: z.string().min(1, "Description is required"),
+  date: z.date(),
+});
 
 const quickFilters = [
   { label: "Today", value: "today" },
