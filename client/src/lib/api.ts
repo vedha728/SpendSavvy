@@ -1,5 +1,5 @@
 import { apiRequest } from "./queryClient";
-import type { Expense, InsertExpense, UpdateExpense, Debt, InsertDebt, UpdateDebt } from "@shared/schema";
+import type { Expense, InsertExpense, UpdateExpense, Debt, InsertDebt, UpdateDebt } from "@shared/types";
 
 export interface ExpenseStats {
   todayTotal: number;
