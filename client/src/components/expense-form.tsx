@@ -38,7 +38,7 @@ export default function ExpenseForm({ activeFilter, setActiveFilter }: ExpenseFo
   const queryClient = useQueryClient();
 
   const form = useForm<InsertExpense>({
-    resolver: zodResolver(insertExpenseSchema),
+    resolver: zodResolver(expenseFormSchema),
     defaultValues: {
       amount: "",
       category: "",
