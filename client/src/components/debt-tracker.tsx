@@ -40,7 +40,6 @@ export default function DebtTracker() {
       amount: "",
       type: "I_OWE_THEM",
       description: "",
-      isSettled: "false",
     },
   });
 
