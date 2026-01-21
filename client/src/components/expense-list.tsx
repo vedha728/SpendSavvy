@@ -4,8 +4,8 @@ import { Edit, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { api } from "@/lib/api";
-import { categories } from "@shared/schema";
-import type { Expense } from "@shared/schema";
+import { categories } from "@shared/types";
+import type { Expense } from "@shared/types";
 
 interface ExpenseListProps {
   activeFilter: string;
