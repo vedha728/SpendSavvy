@@ -14,6 +14,15 @@ import { api } from "@/lib/api";
 import { debtTypes } from "@shared/types";
 import type { InsertDebt, Debt } from "@shared/types";
 
+import { z } from "zod";
+
+const debtFormSchema = z.object({
+  friendName: z.string().min(1, "Friend name is required"),
+  amount: z.string().min(1, "Amount is required"),
+  type: z.enum(["I_OWE_THEM", "THEY_OWE_ME"]),
+  description: z.string().min(1, "Description is required"),
+});
+
 export default function DebtTracker() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -25,7 +34,7 @@ export default function DebtTracker() {
   });
 
   const form = useForm<InsertDebt>({
-    resolver: zodResolver(insertDebtSchema),
+    resolver: zodResolver(debtFormSchema),
     defaultValues: {
       friendName: "",
       amount: "",
