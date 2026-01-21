@@ -11,8 +11,8 @@ import { useToast } from "@/hooks/use-toast";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { api } from "@/lib/api";
-import { insertDebtSchema, debtTypes } from "@shared/schema";
-import type { InsertDebt, Debt } from "@shared/schema";
+import { debtTypes } from "@shared/types";
+import type { InsertDebt, Debt } from "@shared/types";
 
 export default function DebtTracker() {
   const { toast } = useToast();
