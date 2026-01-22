@@ -12,9 +12,10 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { api } from "@/lib/api";
 import { debtTypes } from "@shared/types";
-import type { InsertDebt, Debt } from "@shared/types";
+import type { Debt } from "@shared/types";
 
 import { z } from "zod";
+type DebtFormValues = z.infer<typeof debtFormSchema>;
 
 const debtFormSchema = z.object({
   friendName: z.string().min(1, "Friend name is required"),
@@ -33,7 +34,7 @@ export default function DebtTracker() {
     queryFn: () => api.debts.getAll(),
   });
 
-  const form = useForm<InsertDebt>({
+  const form = useForm<DebtFormValues>({
     resolver: zodResolver(debtFormSchema),
     defaultValues: {
       friendName: "",
@@ -99,7 +100,7 @@ export default function DebtTracker() {
     },
   });
 
-  const onSubmit = (data: InsertDebt) => {
+  const onSubmit = (data:  DebtFormValues) => {
     createDebtMutation.mutate(data);
   };
 
