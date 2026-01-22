@@ -1,8 +1,8 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
-import { storage } from "./storage";
+import { storage } from "./storage.js";
 import { insertExpenseSchema, updateExpenseSchema, insertDebtSchema, updateDebtSchema } from "@shared/schema";
-import { processExpenseQuery, generateExpenseInsights } from "./services/gemini";
+import { processExpenseQuery, generateExpenseInsights } from "./services/gemini.js";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Get all expenses
