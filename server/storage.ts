@@ -1,4 +1,4 @@
-import { type Expense, type InsertExpense, type UpdateExpense, type Debt, type InsertDebt, type UpdateDebt } from "../shared/schema";
+import { type Expense, type InsertExpense, type UpdateExpense, type Debt, type InsertDebt, type UpdateDebt } from "../shared/schema.ts";
 import { randomUUID } from "crypto";
 
 export interface IStorage {
