@@ -13,9 +13,8 @@
     "nanoid": "^5.0.4",
     "@google/genai": "^0.3.0",
     "express": "^4.19.2",
-    "cors": "^2.8.5"
+    "cors": "^2.8.5",
+     "tsx": "^4.7.0"
   },
-  "devDependencies": {
-    "tsx": "^4.7.0"
-  }
+  "devDependencies": { }
 }
