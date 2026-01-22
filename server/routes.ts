@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertExpenseSchema, updateExpenseSchema, insertDebtSchema, updateDebtSchema } from "@shared/schema";
+import { insertExpenseSchema, updateExpenseSchema, insertDebtSchema, updateDebtSchema } from "../shared/schema";
 import { processExpenseQuery, generateExpenseInsights } from "./services/gemini";
 
 export async function registerRoutes(app: Express): Promise<Server> {
