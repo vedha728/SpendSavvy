@@ -11,7 +11,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { useToast } from "@/hooks/use-toast";
 import { api } from "@/lib/api";
 import { categories } from "@shared/types";
-import type { InsertExpense } from "@shared/types;
+import type { InsertExpense } from "@shared/types";
 
 import { z } from "zod";
 
