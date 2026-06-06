@@ -1,5 +1,19 @@
-import { type Expense, type InsertExpense, type UpdateExpense, type Debt, type InsertDebt, type UpdateDebt } from "../shared/schema.ts";
+import { 
+  expenses, 
+  debts, 
+  settings 
+} from "../shared/schema.ts";
+import { 
+  type Expense, 
+  type InsertExpense, 
+  type UpdateExpense, 
+  type Debt, 
+  type InsertDebt, 
+  type UpdateDebt 
+} from "../shared/types.ts";
 import { randomUUID } from "crypto";
+import { db } from "./db";
+import { eq, and, gte, lte, desc, inArray } from "drizzle-orm";
 
 export interface IStorage {
   // Expense operations
@@ -153,7 +167,7 @@ export class MemStorage implements IStorage {
       id,
       createdAt: new Date(),
       settledAt: null,
-      isSettled: insertDebt.isSettled || "false",
+      isSettled: (insertDebt as any).isSettled || "false",
     };
     this.debts.set(id, debt);
     return debt;
@@ -189,4 +203,147 @@ export class MemStorage implements IStorage {
   }
 }
 
-export const storage = new MemStorage();
+export class DbStorage implements IStorage {
+  async getExpenses(): Promise<Expense[]> {
+    const rows = await db.select().from(expenses).orderBy(desc(expenses.date));
+    return rows.map(r => ({ ...r, category: r.category as any }));
+  }
+
+  async getExpense(id: string): Promise<Expense | undefined> {
+    const [expense] = await db.select().from(expenses).where(eq(expenses.id, id));
+    return expense ? { ...expense, category: expense.category as any } : undefined;
+  }
+
+  async createExpense(expense: InsertExpense): Promise<Expense> {
+    const [inserted] = await db.insert(expenses).values({
+      ...expense,
+    }).returning();
+    return { ...inserted, category: inserted.category as any };
+  }
+
+  async updateExpense(id: string, expense: UpdateExpense): Promise<Expense | undefined> {
+    const [updated] = await db.update(expenses)
+      .set(expense)
+      .where(eq(expenses.id, id))
+      .returning();
+    return updated ? { ...updated, category: updated.category as any } : undefined;
+  }
+
+  async deleteExpense(id: string): Promise<boolean> {
+    const result = await db.delete(expenses).where(eq(expenses.id, id)).returning();
+    return result.length > 0;
+  }
+
+  async getExpensesByDateRange(startDate: Date, endDate: Date): Promise<Expense[]> {
+    const rows = await db.select()
+      .from(expenses)
+      .where(and(gte(expenses.date, startDate), lte(expenses.date, endDate)))
+      .orderBy(desc(expenses.date));
+    return rows.map(r => ({ ...r, category: r.category as any }));
+  }
+
+  async getExpensesByCategory(category: string): Promise<Expense[]> {
+    const rows = await db.select()
+      .from(expenses)
+      .where(eq(expenses.category, category))
+      .orderBy(desc(expenses.date));
+    return rows.map(r => ({ ...r, category: r.category as any }));
+  }
+
+  async getBudget(): Promise<number> {
+    const [row] = await db.select().from(settings).where(eq(settings.key, "budget"));
+    return row ? parseFloat(row.value) : 0;
+  }
+
+  async setBudget(amount: number): Promise<void> {
+    await db.insert(settings)
+      .values({ key: "budget", value: amount.toString() })
+      .onConflictDoUpdate({
+        target: settings.key,
+        set: { value: amount.toString() },
+      });
+  }
+
+  async getTodayOverride(): Promise<number | undefined> {
+    const [row] = await db.select().from(settings).where(eq(settings.key, "today_override"));
+    return row ? parseFloat(row.value) : undefined;
+  }
+
+  async setTodayTotal(amount: number): Promise<void> {
+    await db.insert(settings)
+      .values({ key: "today_override", value: amount.toString() })
+      .onConflictDoUpdate({
+        target: settings.key,
+        set: { value: amount.toString() },
+      });
+  }
+
+  async getMonthOverride(): Promise<number | undefined> {
+    const [row] = await db.select().from(settings).where(eq(settings.key, "month_override"));
+    return row ? parseFloat(row.value) : undefined;
+  }
+
+  async setMonthTotal(amount: number): Promise<void> {
+    await db.insert(settings)
+      .values({ key: "month_override", value: amount.toString() })
+      .onConflictDoUpdate({
+        target: settings.key,
+        set: { value: amount.toString() },
+      });
+  }
+
+  async getAvgDailyOverride(): Promise<number | undefined> {
+    const [row] = await db.select().from(settings).where(eq(settings.key, "avg_daily_override"));
+    return row ? parseFloat(row.value) : undefined;
+  }
+
+  async setAvgDaily(amount: number): Promise<void> {
+    await db.insert(settings)
+      .values({ key: "avg_daily_override", value: amount.toString() })
+      .onConflictDoUpdate({
+        target: settings.key,
+        set: { value: amount.toString() },
+      });
+  }
+
+  async clearOverrides(): Promise<void> {
+    await db.delete(settings).where(
+      inArray(settings.key, ["today_override", "month_override", "avg_daily_override"])
+    );
+  }
+
+  async getDebts(): Promise<Debt[]> {
+    const rows = await db.select().from(debts).orderBy(desc(debts.createdAt));
+    return rows.map(r => ({ ...r, type: r.type as any }));
+  }
+
+  async getDebt(id: string): Promise<Debt | undefined> {
+    const [debt] = await db.select().from(debts).where(eq(debts.id, id));
+    return debt ? { ...debt, type: debt.type as any } : undefined;
+  }
+
+  async createDebt(debt: InsertDebt): Promise<Debt> {
+    const [inserted] = await db.insert(debts).values(debt).returning();
+    return { ...inserted, type: inserted.type as any };
+  }
+
+  async updateDebt(id: string, debt: UpdateDebt): Promise<Debt | undefined> {
+    const [updated] = await db.update(debts).set(debt).where(eq(debts.id, id)).returning();
+    return updated ? { ...updated, type: updated.type as any } : undefined;
+  }
+
+  async deleteDebt(id: string): Promise<boolean> {
+    const result = await db.delete(debts).where(eq(debts.id, id)).returning();
+    return result.length > 0;
+  }
+
+  async settleDebt(id: string): Promise<Debt | undefined> {
+    const [settled] = await db.update(debts)
+      .set({ isSettled: "true", settledAt: new Date() } as any)
+      .where(eq(debts.id, id))
+      .returning();
+    return settled ? { ...settled, type: settled.type as any } : undefined;
+  }
+}
+
+export const storage = new DbStorage();

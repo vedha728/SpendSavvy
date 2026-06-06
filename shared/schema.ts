@@ -13,7 +13,7 @@ export const expenses = pgTable("expenses", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
-export const insertExpenseSchema = createInsertSchema(expenses).omit({
+export const insertExpenseSchema = (createInsertSchema(expenses) as any).omit({
   id: true,
   createdAt: true,
 });
@@ -33,10 +33,18 @@ export const debts = pgTable("debts", {
   settledAt: timestamp("settled_at"),
 });
 
-export const insertDebtSchema = createInsertSchema(debts).omit({
+export const insertDebtSchema = (createInsertSchema(debts) as any).omit({
   id: true,
   createdAt: true,
   settledAt: true,
 });
 
 export const updateDebtSchema = insertDebtSchema.partial();
+
+/* ---------- SETTINGS TABLE ---------- */
+
+export const settings = pgTable("settings", {
+  key: text("key").primaryKey(),
+  value: text("value").notNull(),
+});
+

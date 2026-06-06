@@ -53,7 +53,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       };
       
       const validatedData = insertExpenseSchema.parse(expenseData);
-      const expense = await storage.createExpense(validatedData);
+      const expense = await storage.createExpense(validatedData as any);
       res.status(201).json(expense);
     } catch (error) {
       console.error("Error creating expense:", error);
@@ -293,7 +293,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           };
           
           const validatedData = insertExpenseSchema.parse(expenseData);
-          await storage.createExpense(validatedData);
+          await storage.createExpense(validatedData as any);
           
           // Format the date for display
           const dateStr = expenseDate.toLocaleDateString('en-IN', { 
@@ -390,7 +390,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           };
           
           const validatedData = insertDebtSchema.parse(debtData);
-          await storage.createDebt(validatedData);
+          await storage.createDebt(validatedData as any);
           
           const emoji = result.debt_type === "I_OWE_THEM" ? "💸" : "💰";
           const typeText = result.debt_type === "I_OWE_THEM" ? "you owe" : "they owe you";
@@ -537,7 +537,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/debts", async (req, res) => {
     try {
       const validatedData = insertDebtSchema.parse(req.body);
-      const debt = await storage.createDebt(validatedData);
+      const debt = await storage.createDebt(validatedData as any);
       res.status(201).json(debt);
     } catch (error) {
       console.error("Error creating debt:", error);
