@@ -18,5 +18,6 @@
       "@assets/*": ["attached_assets/*"]
     }
   },
-  "include": ["server/**/*", "shared/**/*"]
+  "include": ["server/**/*", "shared/**/*"],
+  "exclude": ["client/**/*"]
 }
